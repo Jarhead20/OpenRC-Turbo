@@ -80,10 +80,7 @@ In order to reduce APK size, the Turbo and Extreme Turbo variants do not bundle 
 
 **NOTE:** The samples in this repo have already been adjusted with this change.
 
-```java
-/*
- * For Vuforia
- */
+
 // Find a line similar to this in the program
 vuforia.loadTrackablesFromAsset("DatasetName");
 // And replace it with this (obviously adjusting the DatasetName)
@@ -97,7 +94,6 @@ tfod.loadModelFromAsset("DatasetName.tflite");
 // And replace it with this (obviously adjusting the DatasetName)
 tfod.loadModelFromFile("/sdcard/FIRST/vision/DatasetName.tflite");
 
-```
 
 
 

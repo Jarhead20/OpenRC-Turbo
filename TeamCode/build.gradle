@@ -10,9 +10,17 @@
 // Custom definitions may go here
 // Include common definitions from above.
 apply from: '../build.common.gradle'
+repositories {
+    maven { url = 'https://maven.brott.dev/' }
+}
 dependencies {
     /*
      * Other Modules
      */
+    implementation('com.acmerobotics.dashboard:dashboard:0.4.3') {
+        exclude group: 'org.firstinspires.ftc'
+    }
+    implementation 'org.openftc:apriltag:1.0.0'
+    implementation 'org.openftc:easyopencv:1.5.0'
     implementation project(':FtcRobotController')
 }
