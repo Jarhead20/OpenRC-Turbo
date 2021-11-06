@@ -3,8 +3,11 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+import java.text.DecimalFormat;
 
 
 public class Drive {
@@ -40,8 +43,8 @@ public class Drive {
 
     public void mecanum(Gamepad gamepad){
         double r = Math.hypot(gamepad.left_stick_x, gamepad.left_stick_y);
-        double robotAngle = Math.atan2(gamepad.left_stick_y, gamepad.left_stick_x) - Math.PI / 4;
-        double rightX = gamepad.right_stick_y;
+        double robotAngle = Math.atan2(-gamepad.left_stick_y, -gamepad.left_stick_x) - Math.PI / 4;
+        double rightX = -gamepad.right_stick_x;
         double[] v = new double[4];
         v[0] = r * Math.cos(robotAngle) + rightX;
         v[1] = r * Math.sin(robotAngle) - rightX;
@@ -51,17 +54,28 @@ public class Drive {
         for (int i = 0; i < 4; i++) {
             if(Math.abs(v[i]) > max) max = Math.abs(v[i]);
         }
+        max = Range.clip(max,-1,1);
+        DecimalFormat df = new DecimalFormat("0.00");
+        telemetry.addData("Status", "max: " + max);
         for (int i = 0; i < 4; i++) {
             double e = v[i] / max;
-            if(v[i] < 0) v[i] = -e*multiplier;
-            else v[i] = e*multiplier;
+//            telemetry.addData("Status", df.format(e) + " " + df.format(v[i]) + " " + df.format(max));
+            if(v[i] < 0) {
+                v[i] = -e;
+//                telemetry.addData("Status", "test:                                     yes");
+            }
+            else v[i] = e;
         }
 
 
-        leftFrontDrive.setPower(v[0]);
-        rightFrontDrive.setPower(v[1]);
-        leftBackDrive.setPower(v[2]);
-        rightBackDrive.setPower(v[3]);
+        leftFrontDrive.setPower(v[0]*multiplier);
+        rightFrontDrive.setPower(v[1]*multiplier);
+        leftBackDrive.setPower(v[2]*multiplier);
+        rightBackDrive.setPower(v[3]*multiplier);
+        telemetry.addData("Status", v[0]);
+        telemetry.addData("Status", v[1]);
+        telemetry.addData("Status", v[2]);
+        telemetry.addData("Status", v[3]);
     }
 
     public DcMotor getLeftFrontDrive() {
