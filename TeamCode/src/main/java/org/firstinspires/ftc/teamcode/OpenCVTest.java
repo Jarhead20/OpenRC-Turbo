@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -77,6 +78,8 @@ public class OpenCVTest extends LinearOpMode
                  * away from the user.
                  */
                 webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                FtcDashboard.getInstance().startCameraStream(webcam, 500);
+                telemetry.addLine("yea");
             }
 
             @Override
@@ -135,6 +138,7 @@ public class OpenCVTest extends LinearOpMode
                  * time. Of course, this comment is irrelevant in light of the use case described in
                  * the above "important note".
                  */
+
                 webcam.stopStreaming();
                 //webcam.closeCameraDevice();
             }

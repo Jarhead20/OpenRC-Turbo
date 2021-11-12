@@ -36,14 +36,19 @@ public class Drive {
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         duck.setDirection(DcMotor.Direction.FORWARD);
         intake.setDirection(DcMotor.Direction.REVERSE);
         telemetry.addData("Status", "Setup");
     }
 
     public void mecanum(Gamepad gamepad){
+
         double r = Math.hypot(gamepad.left_stick_x, gamepad.left_stick_y);
-        double robotAngle = Math.atan2(-gamepad.left_stick_y, -gamepad.left_stick_x) - Math.PI / 4;
+        double robotAngle = Math.atan2(gamepad.left_stick_y, -gamepad.left_stick_x) - Math.PI / 4;
         double rightX = -gamepad.right_stick_x;
         double[] v = new double[4];
         v[0] = r * Math.cos(robotAngle) + rightX;
@@ -59,15 +64,9 @@ public class Drive {
         telemetry.addData("Status", "max: " + max);
         for (int i = 0; i < 4; i++) {
             double e = v[i] / max;
-//            telemetry.addData("Status", df.format(e) + " " + df.format(v[i]) + " " + df.format(max));
-            if(v[i] < 0) {
-                v[i] = -e;
-//                telemetry.addData("Status", "test:                                     yes");
-            }
-            else v[i] = e;
+            telemetry.addData("Status", df.format(e) + " " + df.format(v[i]) + " " + df.format(max));
+            v[i] = e;
         }
-
-
         leftFrontDrive.setPower(v[0]*multiplier);
         rightFrontDrive.setPower(v[1]*multiplier);
         leftBackDrive.setPower(v[2]*multiplier);
