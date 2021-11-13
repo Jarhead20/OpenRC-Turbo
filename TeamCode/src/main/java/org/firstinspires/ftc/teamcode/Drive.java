@@ -149,6 +149,7 @@ class DuckSpinner implements Runnable {
             Thread.sleep(t1);
             duck.setPower(s2);
             Thread.sleep(t2);
+            duck.setPower(0);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
