@@ -33,11 +33,11 @@ public class Main extends OpMode
 
     @Override
     public void loop() {
-        if(gamepad1.a) drive.runDuck();
-        if(gamepad1.x) drive.stopDuck();
+        if(gamepad2.a) drive.runDuck();
+        if(gamepad2.x) drive.stopDuck();
 
-        if(gamepad1.b) drive.runIntake();
-        if(gamepad1.y) drive.stopIntake();
+        if(gamepad2.b) drive.runIntake();
+        if(gamepad2.y) drive.stopIntake();
 
         drive.setMultiplier(1-gamepad1.right_trigger);
         drive.mecanum(gamepad1);
