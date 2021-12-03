@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.util.Range;
 
 import java.text.DecimalFormat;
 
+// Very nice job @Jarhead.
+
 //192.168.43.1:8080/dash
 @TeleOp(name="Main", group="Iterative Opmode")
 public class Main extends OpMode
