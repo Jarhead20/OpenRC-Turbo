@@ -58,8 +58,8 @@ public class Drive {
     public void mecanum(Gamepad gamepad){
 
         double r = Math.hypot(gamepad.left_stick_x, gamepad.left_stick_y);
-        double robotAngle = Math.atan2(gamepad.left_stick_y, -gamepad.left_stick_x) - Math.PI / 4;
-        double rightX = -gamepad.right_stick_x;
+        double robotAngle = Math.atan2(-gamepad.left_stick_y, gamepad.left_stick_x) - Math.PI / 4;
+        double rightX = gamepad.right_stick_x;
         double[] v = new double[4];
         v[0] = r * Math.cos(robotAngle) + rightX;
         v[1] = r * Math.sin(robotAngle) - rightX;
