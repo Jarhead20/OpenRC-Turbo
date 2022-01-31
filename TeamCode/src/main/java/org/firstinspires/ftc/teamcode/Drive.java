@@ -29,8 +29,8 @@ public class Drive {
     public void setup(){
         leftFrontDrive  = map.get(DcMotor.class, "leftFront");
         rightFrontDrive = map.get(DcMotor.class, "rightFront");
-        leftBackDrive  = map.get(DcMotor.class, "leftBack");
-        rightBackDrive = map.get(DcMotor.class, "rightBack");
+        leftBackDrive  = map.get(DcMotor.class, "leftRear");
+        rightBackDrive = map.get(DcMotor.class, "rightRear");
         duckDrive = map.get(DcMotor.class, "duck");
         intakeDrive = map.get(DcMotor.class, "intake");
 
