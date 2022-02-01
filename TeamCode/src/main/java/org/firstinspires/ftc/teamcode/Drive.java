@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -22,7 +23,7 @@ public class Drive {
     private DcMotor duckDrive = null;
     private DcMotor intakeDrive = null;
     private DcMotor slideDrive = null;
-    public Servo servo = null;
+    public  Servo servo = null;
     private DuckSpinner ds;
     private Thread t;
     private double multiplier = 1;
