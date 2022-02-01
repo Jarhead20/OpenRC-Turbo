@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -19,6 +21,8 @@ public class Drive {
     private DcMotor rightBackDrive = null;
     private DcMotor duckDrive = null;
     private DcMotor intakeDrive = null;
+    private DcMotor slideDrive = null;
+    public Servo servo = null;
     private DuckSpinner ds;
     private Thread t;
     private double multiplier = 1;
@@ -33,6 +37,8 @@ public class Drive {
         rightBackDrive = map.get(DcMotor.class, "rightRear");
         duckDrive = map.get(DcMotor.class, "duck");
         intakeDrive = map.get(DcMotor.class, "intake");
+        slideDrive = map.get(DcMotor.class, "slide");
+        servo = map.get(Servo.class, "servo");
 
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -41,15 +47,17 @@ public class Drive {
 
         duckDrive.setDirection(DcMotor.Direction.FORWARD);
         intakeDrive.setDirection(DcMotor.Direction.REVERSE);
+        slideDrive.setDirection(DcMotorSimple.Direction.REVERSE);
 
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+
         duckDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        ds = new DuckSpinner(duckDrive, -0.1,200,-1,200);
+        ds = new DuckSpinner(duckDrive, -0.1,2000,-1,200);
         t = new Thread(ds);
 
         telemetry.addData("Status", "Setup");
@@ -71,31 +79,36 @@ public class Drive {
         }
         max = Range.clip(max,-1,1);
         DecimalFormat df = new DecimalFormat("0.00");
-        telemetry.addData("Status", "max: " + max);
+//        telemetry.addData("Status", "max: " + max);
         for (int i = 0; i < 4; i++) {
             double e = v[i] / max;
-            telemetry.addData("Status", df.format(e) + " " + df.format(v[i]) + " " + df.format(max));
+//            telemetry.addData("Status", df.format(e) + " " + df.format(v[i]) + " " + df.format(max));
             v[i] = e;
         }
         leftFrontDrive.setPower(v[0]*multiplier);
         rightFrontDrive.setPower(v[1]*multiplier);
         leftBackDrive.setPower(v[2]*multiplier);
         rightBackDrive.setPower(v[3]*multiplier);
-        telemetry.addData("Status", v[0]);
-        telemetry.addData("Status", v[1]);
-        telemetry.addData("Status", v[2]);
-        telemetry.addData("Status", v[3]);
+//        telemetry.addData("Status", v[0]);
+//        telemetry.addData("Status", v[1]);
+//        telemetry.addData("Status", v[2]);
+//        telemetry.addData("Status", v[3]);
     }
 
     public void runDuck(){
         if(!t.isAlive()) t.start();
     }
     public void stopDuck(){
-        if(!t.isInterrupted() && t.isAlive()) t.interrupt();
+        if(!t.isInterrupted() && t.isAlive()) {
+            t.interrupt();
+            duckDrive.setPower(0);
+        }
     }
 
     public void runIntake(){ intakeDrive.setPower(1); }
     public void stopIntake(){ intakeDrive.setPower(0); }
+
+    public void slide(double pos){ slideDrive.setPower(pos); }
 
     public DcMotor getLeftFrontDrive() {
         return leftFrontDrive;

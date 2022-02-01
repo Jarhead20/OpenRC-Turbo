@@ -21,6 +21,7 @@ public class Main extends OpMode
         telemetry.addData("Status", "Initialized");
         drive = new Drive(hardwareMap,telemetry);
         drive.setup();
+
     }
 
     @Override
@@ -39,6 +40,15 @@ public class Main extends OpMode
         if(gamepad2.b) drive.runIntake();
         if(gamepad2.y) drive.stopIntake();
 
+        if(gamepad2.dpad_left) {
+            telemetry.addData("idk","idk");
+            drive.servo.setPosition(0.5);
+
+        }
+        if(gamepad2.dpad_right) drive.servo.setPosition(1);
+
+
+        drive.slide(gamepad2.left_stick_y);
         drive.setMultiplier(1-gamepad1.right_trigger);
         drive.mecanum(gamepad1);
 
