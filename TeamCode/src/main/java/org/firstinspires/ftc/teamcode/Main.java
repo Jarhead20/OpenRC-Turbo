@@ -45,14 +45,15 @@ public class Main extends OpMode
 
        // if(gamepad2.dpad_left) drive.servo.setPosition();
        // if(gamepad2.dpad_right) drive.servo.setPosition();
-
         // +1/2
-        drive.servo.setPosition((gamepad2.right_stick_y+1)/2);
+
+
+        if(gamepad2.dpad_down && 0.5 > drive.MIN_POSITION) drive.servoPosition -= 0.1;
+        if(gamepad2.dpad_up && 0.5 < drive.MAX_POSITION) drive.servoPosition += 0.1;
+
+        drive.servo.setPosition(Range.clip(drive.servoPosition, drive.MIN_POSITION, drive.MAX_POSITION));
 
         telemetry.addData("Degrees:", drive.servo.getPosition());
-
-        if(gamepad2.left_bumper) telemetry.addData("On", "");
-
 
         drive.slide(gamepad2.left_stick_y);
         drive.setMultiplier(1-gamepad1.right_trigger);

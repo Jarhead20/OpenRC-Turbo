@@ -27,6 +27,9 @@ public class Drive {
     private DuckSpinner ds;
     private Thread t;
     private double multiplier = 1;
+    public double MIN_POSITION = 0, MAX_POSITION = 1;
+    public float servoPosition;
+
     public Drive(HardwareMap map, Telemetry telemetry){
         this.map = map;
         this.telemetry = telemetry;
