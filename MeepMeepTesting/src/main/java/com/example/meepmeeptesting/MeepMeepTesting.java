@@ -15,7 +15,7 @@ public class MeepMeepTesting {
 
         // Declare a MeepMeep instance
         // With a field size of 800 pixels
-        MeepMeep mm = new MeepMeep(1200)
+        MeepMeep mm = new MeepMeep(900)
                 // Set field image
                 .setBackground(MeepMeep.Background.FIELD_FREIGHT_FRENZY)
                 // Set theme
@@ -27,15 +27,94 @@ public class MeepMeepTesting {
                 .setConstraints(20, 20, Math.toRadians(180), Math.toRadians(180), 10)
                 .followTrajectorySequence(drive ->
                         drive.trajectorySequenceBuilder(new Pose2d(10, -65, Math.toRadians(270)))
-//                                .forward(-30)
                                 .setReversed(true)
-                                .splineTo(new Vector2d(0,-40),Math.toRadians(135))
-//                                .addTrajectory()
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("extend slide");
+                                })
+                                .splineTo(new Vector2d(0,-40),Math.toRadians(120))
+
                                 .setReversed(false)
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("spin servo");
+                                })
 //                                .addDisplacementMarker()
 //                                .splineToConstantHeading()
-                                .splineTo(new Vector2d(23,-64),Math.toRadians(0))
+                                .splineTo(new Vector2d(23,-63),Math.toRadians(0))
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("spin intake");
+                                    System.out.println("retract slide");
+                                })
                                 .forward(30)
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("stop intake");
+                                })
+                                .back(30)
+                                .setReversed(true)
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("extend slide");
+                                })
+                                .splineTo(new Vector2d(0,-40),Math.toRadians(120))
+
+                                .setReversed(false)
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("spin servo");
+                                })
+//                                .addDisplacementMarker()
+//                                .splineToConstantHeading()
+                                .splineTo(new Vector2d(23,-63),Math.toRadians(0))
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("spin intake");
+                                    System.out.println("retract slide");
+                                })
+                                .forward(30)
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("stop intake");
+                                })
+                                .back(30)
+                                .setReversed(true)
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("extend slide");
+                                })
+                                .splineTo(new Vector2d(0,-40),Math.toRadians(120))
+
+                                .setReversed(false)
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("spin servo");
+                                })
+//                                .addDisplacementMarker()
+//                                .splineToConstantHeading()
+                                .splineTo(new Vector2d(23,-63),Math.toRadians(0))
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("spin intake");
+                                    System.out.println("retract slide");
+                                })
+                                .forward(30)
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("stop intake");
+                                })
+                                .back(30)
+                                .setReversed(true)
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("extend slide");
+                                })
+                                .splineTo(new Vector2d(0,-40),Math.toRadians(120))
+
+                                .setReversed(false)
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("spin servo");
+                                })
+//                                .addDisplacementMarker()
+//                                .splineToConstantHeading()
+                                .splineTo(new Vector2d(23,-63),Math.toRadians(0))
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("spin intake");
+                                    System.out.println("retract slide");
+                                })
+                                .forward(30)
+                                .addDisplacementMarker(() -> {
+                                    System.out.println("stop intake");
+                                })
+                                .back(30)
                                 .build()
                 )
                 .start();

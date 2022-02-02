@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -23,6 +24,7 @@ public class Main extends OpMode
         telemetry.addData("Status", "Initialized");
         drive = new Drive(hardwareMap,telemetry);
         drive.setup();
+
     }
 
     @Override
@@ -41,6 +43,18 @@ public class Main extends OpMode
         if(gamepad2.b) drive.runIntake();
         if(gamepad2.y) drive.stopIntake();
 
+       // if(gamepad2.dpad_left) drive.servo.setPosition();
+       // if(gamepad2.dpad_right) drive.servo.setPosition();
+
+        // +1/2
+        drive.servo.setPosition((gamepad2.right_stick_y+1)/2);
+
+        telemetry.addData("Degrees:", drive.servo.getPosition());
+
+        if(gamepad2.left_bumper) telemetry.addData("On", "");
+
+
+        drive.slide(gamepad2.left_stick_y);
         drive.setMultiplier(1-gamepad1.right_trigger);
         drive.mecanum(gamepad1);
 
