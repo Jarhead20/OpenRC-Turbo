@@ -27,8 +27,8 @@ public class Drive {
     private DuckSpinner ds;
     private Thread t;
     private double multiplier = 1;
-    public double MIN_POSITION = 0, MAX_POSITION = 1;
-    public float servoPosition;
+    public final double MIN_POSITION = 0, MAX_POSITION = 1;
+    public double servoPosition = 0.5;
 
     public Drive(HardwareMap map, Telemetry telemetry){
         this.map = map;
@@ -58,7 +58,7 @@ public class Drive {
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-
+        servo.getController().pwmEnable();
         duckDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         ds = new DuckSpinner(duckDrive, -0.1,2000,-1,200);

@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -47,13 +48,22 @@ public class Main extends OpMode
        // if(gamepad2.dpad_right) drive.servo.setPosition();
         // +1/2
 
+//        drive.servoPosition = 1;
+        //telemetry.addData("yes",drive.servo.getController().getPwmStatus());
+        if(gamepad2.dpad_down)
+            drive.servoPosition -= 0.2;
 
-        if(gamepad2.dpad_down && 0.5 > drive.MIN_POSITION) drive.servoPosition -= 0.1;
-        if(gamepad2.dpad_up && 0.5 < drive.MAX_POSITION) drive.servoPosition += 0.1;
+        else if(gamepad2.dpad_up)
+            drive.servoPosition += 0.2;
 
-        drive.servo.setPosition(Range.clip(drive.servoPosition, drive.MIN_POSITION, drive.MAX_POSITION));
+
+
+        drive.servo.setPosition((gamepad2.right_stick_y+1)/2);
+//        drive.servo.setPosition(0.65);
+        //drive.servo.setPosition(Range.clip(((gamepad2.right_stick_y+1)/2) + 0.2, drive.MIN_POSITION, drive.MAX_POSITION));
 
         telemetry.addData("Degrees:", drive.servo.getPosition());
+        telemetry.addData("servoPosition Variable", drive.servoPosition);
 
         drive.slide(gamepad2.left_stick_y);
         drive.setMultiplier(1-gamepad1.right_trigger);
