@@ -67,6 +67,7 @@ public class Drive {
         slideDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         servo.getController().pwmEnable();
+        servo.setPosition(0.5);
         duckDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         ds = new DuckSpinner(duckDrive, -0.1,2000,-1,200);
@@ -126,9 +127,44 @@ public class Drive {
     public void slide(int position){
         //9 rotations for full extension
 
-        if(!st.isAlive()) {
-            st = new Thread(new Slide(position, slideDrive, servo, telemetry));
-            st.run();
+//        if(!st.isAlive()) {
+//            st = new Thread(new Slide(position, slideDrive, servo, telemetry));
+//            st.run();
+//        }
+        telemetry.addData("d",position + " " + slideDrive.getPower());
+        switch(position){
+            case 1:
+                if(!slideDrive.isBusy()) {
+                    slideDrive.setTargetPosition(0);
+                    slideDrive.setPower(1);
+                    slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                }
+                if(slideDrive.getCurrentPosition() >= -1500) servo.setPosition(0.5);
+                else servo.setPosition(0.3);
+                break;
+            case 2:
+                if(!slideDrive.isBusy()) {
+                    slideDrive.setTargetPosition(-7250);
+                    slideDrive.setPower(1);
+                    slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                }
+                if(slideDrive.getCurrentPosition() <= -7000) servo.setPosition(0);
+                else if(slideDrive.getCurrentPosition() >= -1600) servo.setPosition(0.5);
+                else servo.setPosition(0.3);
+                break;
+            case 3:
+                if(!slideDrive.isBusy()){
+                    slideDrive.setTargetPosition(-10000);
+                    slideDrive.setPower(1);
+                    slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                }
+                if(slideDrive.getCurrentPosition() <= -9900) servo.setPosition(0);
+                else if(slideDrive.getCurrentPosition() >= -1600) servo.setPosition(0.5);
+                else servo.setPosition(0.3);
+                break;
+            default:
+                break;
+
         }
     }
 
@@ -213,54 +249,7 @@ class Slide implements Runnable {
         //0.5 = flat for intake
 
         //-1500 transition to move / flat
-        switch(position){
-            case 1:
-                slideDrive.setTargetPosition(0);
-                slideDrive.setPower(0.5);
-                slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                while(slideDrive.isBusy()){
-                    if(slideDrive.getCurrentPosition() >= -1600) {
-                        servo.setPosition(0.5);
-                        break;
-                    }
-                }
 
-                break;
-            case 2:
-                slideDrive.setTargetPosition(-7250);
-                slideDrive.setPower(0.5);
-                slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                while(slideDrive.isBusy()){
-                    if(slideDrive.getCurrentPosition() <= -7000) {
-                        servo.setPosition(0);
-                        break;
-                    }
-                    else if(slideDrive.getCurrentPosition() >= -1600) servo.setPosition(0.5);
-
-                    else servo.setPosition(0.3);
-                }
-                break;
-            case 3:
-                slideDrive.setTargetPosition(-10000);
-                slideDrive.setPower(0.5);
-                slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                while(slideDrive.isBusy()){
-                    System.out.println(slideDrive.getCurrentPosition());
-                    telemetry.addData("Status", "Waiting for the motor to reach its target");
-                    telemetry.update();
-                    if(slideDrive.getCurrentPosition() <= -9900) {
-                        servo.setPosition(0);
-                        break;
-                    }
-                    else if(slideDrive.getCurrentPosition() >= -1600) servo.setPosition(0.5);
-
-                    else servo.setPosition(0.3);
-                }
-                break;
-            default:
-                break;
-
-        }
 
     }
 }

@@ -28,21 +28,20 @@ public class Main extends OpMode
 
 
 
-        drive.slideDrive.setTargetPosition(-10000);
-        drive.slideDrive.setPower(0.5);
-        drive.slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(drive.slideDrive.isBusy()){
-            System.out.println(drive.slideDrive.getCurrentPosition());
-            telemetry.addData("Status", "Waiting for the motor to reach its target");
-            telemetry.update();
-            if(drive.slideDrive.getCurrentPosition() <= -9900) {
-                drive.servo.setPosition(0);
-                break;
-            }
-            else if(drive.slideDrive.getCurrentPosition() >= -1600) drive.servo.setPosition(0.5);
+//        drive.slideDrive.setTargetPosition(-10000);
+//        drive.slideDrive.setPower(0.5);
+//        drive.slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//
+//            System.out.println(drive.slideDrive.getCurrentPosition());
+//            telemetry.addData("Status", "Waiting for the motor to reach its target");
+//            telemetry.update();
+//            if(drive.slideDrive.getCurrentPosition() <= -9900) {
+//                drive.servo.setPosition(0);
+//            }
+//            else if(drive.slideDrive.getCurrentPosition() >= -1600) drive.servo.setPosition(0.5);
+//
+//            else drive.servo.setPosition(0.3);
 
-            else drive.servo.setPosition(0.3);
-        }
     }
 
     @Override
@@ -66,11 +65,13 @@ public class Main extends OpMode
         telemetry.addData("Degrees:", drive.servo.getPosition());
 
 
-        if(gamepad2.dpad_up && drive.position < 3) drive.slide(++drive.position);
-        else if(gamepad2.dpad_down && drive.position > 0) drive.slide(--drive.position);
+        if(gamepad2.dpad_up && drive.position < 3) drive.position++;
+        else if(gamepad2.dpad_down && drive.position > 1) drive.position--;
 
-        drive.servo.setPosition((gamepad2.right_stick_y+1)/2);
-        drive.slideDrive.setPower(gamepad2.left_stick_y);
+        drive.slide(drive.position);
+
+        //drive.servo.setPosition((gamepad2.right_stick_y+1)/2);
+        //drive.slideDrive.setPower(gamepad2.left_stick_y);
 
         telemetry.addData("1", drive.slideDrive.getCurrentPosition() + " " + drive.slideDrive.getTargetPosition());
 
