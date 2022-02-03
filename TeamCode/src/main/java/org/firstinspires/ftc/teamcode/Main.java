@@ -26,6 +26,23 @@ public class Main extends OpMode
         drive = new Drive(hardwareMap,telemetry);
         drive.setup();
 
+
+
+        drive.slideDrive.setTargetPosition(-10000);
+        drive.slideDrive.setPower(0.5);
+        drive.slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while(drive.slideDrive.isBusy()){
+            System.out.println(drive.slideDrive.getCurrentPosition());
+            telemetry.addData("Status", "Waiting for the motor to reach its target");
+            telemetry.update();
+            if(drive.slideDrive.getCurrentPosition() <= -9900) {
+                drive.servo.setPosition(0);
+                break;
+            }
+            else if(drive.slideDrive.getCurrentPosition() >= -1600) drive.servo.setPosition(0.5);
+
+            else drive.servo.setPosition(0.3);
+        }
     }
 
     @Override
@@ -35,7 +52,7 @@ public class Main extends OpMode
     public void start() {
         runtime.reset();
     }
-
+    
     @Override
     public void loop() {
         if(gamepad2.a) drive.runDuck();
@@ -44,28 +61,19 @@ public class Main extends OpMode
         if(gamepad2.b) drive.runIntake();
         if(gamepad2.y) drive.stopIntake();
 
-       // if(gamepad2.dpad_left) drive.servo.setPosition();
-       // if(gamepad2.dpad_right) drive.servo.setPosition();
-        // +1/2
-
-//        drive.servoPosition = 1;
-        //telemetry.addData("yes",drive.servo.getController().getPwmStatus());
-        if(gamepad2.dpad_down)
-            drive.servoPosition -= 0.2;
-
-        else if(gamepad2.dpad_up)
-            drive.servoPosition += 0.2;
-
-
-
-        drive.servo.setPosition((gamepad2.right_stick_y+1)/2);
-//        drive.servo.setPosition(0.65);
         //drive.servo.setPosition(Range.clip(((gamepad2.right_stick_y+1)/2) + 0.2, drive.MIN_POSITION, drive.MAX_POSITION));
 
         telemetry.addData("Degrees:", drive.servo.getPosition());
-        telemetry.addData("servoPosition Variable", drive.servoPosition);
 
-        drive.slide(gamepad2.left_stick_y);
+
+        if(gamepad2.dpad_up && drive.position < 3) drive.slide(++drive.position);
+        else if(gamepad2.dpad_down && drive.position > 0) drive.slide(--drive.position);
+
+        drive.servo.setPosition((gamepad2.right_stick_y+1)/2);
+        drive.slideDrive.setPower(gamepad2.left_stick_y);
+
+        telemetry.addData("1", drive.slideDrive.getCurrentPosition() + " " + drive.slideDrive.getTargetPosition());
+
         drive.setMultiplier(1-gamepad1.right_trigger);
         drive.mecanum(gamepad1);
 

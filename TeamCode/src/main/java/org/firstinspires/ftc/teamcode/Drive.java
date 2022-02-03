@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.sax.TextElementListener;
+
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -9,6 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.internal.usb.UsbSerialNumber;
 
 import java.text.DecimalFormat;
 
@@ -22,10 +25,12 @@ public class Drive {
     private DcMotor rightBackDrive = null;
     private DcMotor duckDrive = null;
     private DcMotor intakeDrive = null;
-    private DcMotor slideDrive = null;
+    public DcMotor slideDrive = null;
     public  Servo servo = null;
     private DuckSpinner ds;
     private Thread t;
+    private Thread st;
+    public int position = 0;
     private double multiplier = 1;
     public final double MIN_POSITION = 0, MAX_POSITION = 1;
     public double servoPosition = 0.5;
@@ -58,11 +63,17 @@ public class Drive {
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        slideDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        slideDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         servo.getController().pwmEnable();
         duckDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         ds = new DuckSpinner(duckDrive, -0.1,2000,-1,200);
         t = new Thread(ds);
+
+        st = new Thread(new Slide(position, slideDrive, servo, telemetry));
+
 
         telemetry.addData("Status", "Setup");
     }
@@ -112,7 +123,14 @@ public class Drive {
     public void runIntake(){ intakeDrive.setPower(1); }
     public void stopIntake(){ intakeDrive.setPower(0); }
 
-    public void slide(double pos){ slideDrive.setPower(pos); }
+    public void slide(int position){
+        //9 rotations for full extension
+
+        if(!st.isAlive()) {
+            st = new Thread(new Slide(position, slideDrive, servo, telemetry));
+            st.run();
+        }
+    }
 
     public DcMotor getLeftFrontDrive() {
         return leftFrontDrive;
@@ -143,6 +161,7 @@ public class Drive {
     public void setMultiplier(double multiplier) {
         this.multiplier = multiplier;
     }
+
 }
 
 class DuckSpinner implements Runnable {
@@ -170,5 +189,78 @@ class DuckSpinner implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+}
+
+class Slide implements Runnable {
+
+    private int position = 0;
+    private DcMotor slideDrive;
+    private Servo servo;
+    private Telemetry telemetry;
+
+    public Slide(int position, DcMotor slideDrive, Servo servo, Telemetry telemetry){
+        this.position = position;
+        this.slideDrive = slideDrive;
+        this.servo = servo;
+        this.telemetry = telemetry;
+    }
+
+    @Override
+    public void run() {
+        //0 = tip
+        //0.3 = move
+        //0.5 = flat for intake
+
+        //-1500 transition to move / flat
+        switch(position){
+            case 1:
+                slideDrive.setTargetPosition(0);
+                slideDrive.setPower(0.5);
+                slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                while(slideDrive.isBusy()){
+                    if(slideDrive.getCurrentPosition() >= -1600) {
+                        servo.setPosition(0.5);
+                        break;
+                    }
+                }
+
+                break;
+            case 2:
+                slideDrive.setTargetPosition(-7250);
+                slideDrive.setPower(0.5);
+                slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                while(slideDrive.isBusy()){
+                    if(slideDrive.getCurrentPosition() <= -7000) {
+                        servo.setPosition(0);
+                        break;
+                    }
+                    else if(slideDrive.getCurrentPosition() >= -1600) servo.setPosition(0.5);
+
+                    else servo.setPosition(0.3);
+                }
+                break;
+            case 3:
+                slideDrive.setTargetPosition(-10000);
+                slideDrive.setPower(0.5);
+                slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                while(slideDrive.isBusy()){
+                    System.out.println(slideDrive.getCurrentPosition());
+                    telemetry.addData("Status", "Waiting for the motor to reach its target");
+                    telemetry.update();
+                    if(slideDrive.getCurrentPosition() <= -9900) {
+                        servo.setPosition(0);
+                        break;
+                    }
+                    else if(slideDrive.getCurrentPosition() >= -1600) servo.setPosition(0.5);
+
+                    else servo.setPosition(0.3);
+                }
+                break;
+            default:
+                break;
+
+        }
+
     }
 }
