@@ -26,22 +26,6 @@ public class Main extends OpMode
         drive = new Drive(hardwareMap,telemetry);
         drive.setup();
 
-
-
-//        drive.slideDrive.setTargetPosition(-10000);
-//        drive.slideDrive.setPower(0.5);
-//        drive.slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//
-//            System.out.println(drive.slideDrive.getCurrentPosition());
-//            telemetry.addData("Status", "Waiting for the motor to reach its target");
-//            telemetry.update();
-//            if(drive.slideDrive.getCurrentPosition() <= -9900) {
-//                drive.servo.setPosition(0);
-//            }
-//            else if(drive.slideDrive.getCurrentPosition() >= -1600) drive.servo.setPosition(0.5);
-//
-//            else drive.servo.setPosition(0.3);
-
     }
 
     @Override
@@ -60,13 +44,11 @@ public class Main extends OpMode
         if(gamepad2.b) drive.runIntake();
         if(gamepad2.y) drive.stopIntake();
 
-        //drive.servo.setPosition(Range.clip(((gamepad2.right_stick_y+1)/2) + 0.2, drive.MIN_POSITION, drive.MAX_POSITION));
-
         telemetry.addData("Degrees:", drive.servo.getPosition());
 
-
-        if(gamepad2.dpad_up && drive.position < 3) drive.position++;
-        else if(gamepad2.dpad_down && drive.position > 1) drive.position--;
+        if(gamepad2.dpad_up) drive.position=3;
+        else if (gamepad2.dpad_left) drive.position=2;
+        else if(gamepad2.dpad_down) drive.position=1;
 
         drive.slide(drive.position);
 
