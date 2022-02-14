@@ -29,7 +29,6 @@ public class Drive {
     public  Servo servo = null;
     private DuckSpinner ds;
     private Thread t;
-    private Thread st;
     public int position = 0;
     private double multiplier = 1;
     public final double MIN_POSITION = 0, MAX_POSITION = 1;
@@ -54,7 +53,7 @@ public class Drive {
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        duckDrive.setDirection(DcMotor.Direction.FORWARD);
+        duckDrive.setDirection(DcMotor.Direction.REVERSE);
         intakeDrive.setDirection(DcMotor.Direction.REVERSE);
         slideDrive.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -62,7 +61,7 @@ public class Drive {
         rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
+     CLSck ;nk
         slideDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slideDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -70,10 +69,9 @@ public class Drive {
         servo.setPosition(0.5);
         duckDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        ds = new DuckSpinner(duckDrive, -0.1,2000,-1,200);
+        ds = new DuckSpinner(duckDrive, -0.3,1500,-0.7,200);
         t = new Thread(ds);
 
-        st = new Thread(new Slide(position, slideDrive, servo, telemetry));
 
 
         telemetry.addData("Status", "Setup");
@@ -228,28 +226,3 @@ class DuckSpinner implements Runnable {
     }
 }
 
-class Slide implements Runnable {
-
-    private int position = 0;
-    private DcMotor slideDrive;
-    private Servo servo;
-    private Telemetry telemetry;
-
-    public Slide(int position, DcMotor slideDrive, Servo servo, Telemetry telemetry){
-        this.position = position;
-        this.slideDrive = slideDrive;
-        this.servo = servo;
-        this.telemetry = telemetry;
-    }
-
-    @Override
-    public void run() {
-        //0 = tip
-        //0.3 = move
-        //0.5 = flat for intake
-
-        //-1500 transition to move / flat
-
-
-    }
-}
