@@ -88,47 +88,23 @@ public class AprilTagDemo extends LinearOpMode
                 if(detections.size() == 0)
                 {
                     numFramesWithoutDetection++;
-
-                    // If we haven't seen a tag for a few frames, lower the decimation
-                    // so we can hopefully pick one up if we're e.g. far back
-                    if(numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION)
-                    {
-                        aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
-                    }
+                    if(numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION) aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
                 }
-                // We do see tags!
                 else
                 {
                     numFramesWithoutDetection = 0;
-
                     // If the target is within 1 meter, turn on high decimation to
                     // increase the frame rate
-                    if(detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS)
-                    {
-                        aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
-                    }
-
+                    if(detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
                     for(AprilTagDetection detection : detections)
                     {
-//                        telemetry.addLine(String.format("\nDetected tag ID=%d", detection.id));
-//                        telemetry.addLine(String.format("Translation X: %.2f feet", detection.pose.x*FEET_PER_METER));
-//                        telemetry.addLine(String.format("Translation Y: %.2f feet", detection.pose.y*FEET_PER_METER));
-//                        telemetry.addLine(String.format("Translation Z: %.2f feet", detection.pose.z*FEET_PER_METER));
-//                        telemetry.addLine(String.format("Rotation Yaw: %.2f degrees", Math.toDegrees(detection.pose.yaw)));
-//                        telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", Math.toDegrees(detection.pose.pitch)));
-//                        telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
-//                        System.out.println(detection.pose.x + " " + detection.pose.y + " " + detection.pose.z);
-
                         if(detection.pose.x < 0) System.out.println(1);
                         else if(detection.pose.x > 1 && detection.pose.x > 1) System.out.println(3);
                         else if(detection.pose.x < 1 && detection.pose.x > 0) System.out.println(2);
                     }
-
                 }
-
                 telemetry.update();
             }
-
             sleep(20);
         }
     }

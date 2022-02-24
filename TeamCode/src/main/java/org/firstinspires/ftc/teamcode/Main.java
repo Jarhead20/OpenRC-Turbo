@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import java.text.DecimalFormat;
 
-// Very nice job @Jarhead.
+
 
 //192.168.43.1:8080/dash
 @TeleOp(name="Main", group="Iterative Opmode")
@@ -19,6 +19,7 @@ public class Main extends OpMode
 {
     private ElapsedTime runtime = new ElapsedTime();
     private Drive drive;
+    private boolean temp = false;
 
     @Override
     public void init() {
@@ -44,20 +45,36 @@ public class Main extends OpMode
         if(gamepad2.b) drive.runIntake();
         if(gamepad2.y) drive.stopIntake();
 
+        if(gamepad2.right_bumper) {
+            drive.slideDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            drive.slideDrive.setTargetPosition(0);
+            drive.slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        }
+
         telemetry.addData("Degrees:", drive.servo.getPosition());
+        if(gamepad2.dpad_right) temp = !temp;
+        telemetry.addData("temp",temp);
+        if(temp){
+            if(gamepad2.dpad_up) drive.position=3;
+            else if (gamepad2.dpad_left) drive.position=2;
+            else if(gamepad2.dpad_down) drive.position=1;
+            drive.slide(drive.position);
+        }
+        else{
 
-        if(gamepad2.dpad_up) drive.position=3;
-        else if (gamepad2.dpad_left) drive.position=2;
-        else if(gamepad2.dpad_down) drive.position=1;
+            drive.servo.setPosition((gamepad2.right_stick_y+1)/2);
+            //drive.slideDrive.setTargetPosition((int) ((drive.slideDrive.getTargetPosition()+gamepad2.left_stick_y*10)));
 
-        drive.slide(drive.position);
+            drive.slideDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            drive.slideDrive.setPower(gamepad2.left_stick_y*(1-gamepad2.right_trigger));
+            telemetry.addData("ooga booga", "ooga booga");
+        }
 
-        //drive.servo.setPosition((gamepad2.right_stick_y+1)/2);
-        //drive.slideDrive.setPower(gamepad2.left_stick_y);
-
+        drive.ramp.setPosition(0.5-gamepad2.left_trigger/2);
         telemetry.addData("1", drive.slideDrive.getCurrentPosition() + " " + drive.slideDrive.getTargetPosition());
 
-        drive.setMultiplier(1-gamepad1.right_trigger);
+        drive.setMultiplier((gamepad1.right_trigger/2)+0.5);
         drive.mecanum(gamepad1);
 
 //        telemetry.addData("Status", "Run Time: " + runtime.toString());

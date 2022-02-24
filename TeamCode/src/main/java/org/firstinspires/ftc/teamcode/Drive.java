@@ -28,6 +28,7 @@ public class Drive {
     public DcMotor slideDrive = null;
     public  Servo servo = null;
     private DuckSpinner ds;
+    public Servo ramp = null;
     private Thread t;
     public int position = 0;
     private double multiplier = 1;
@@ -47,13 +48,14 @@ public class Drive {
         intakeDrive = map.get(DcMotor.class, "intake");
         slideDrive = map.get(DcMotor.class, "slide");
         servo = map.get(Servo.class, "servo");
+        ramp = map.get(Servo.class, "ramp");
 
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        duckDrive.setDirection(DcMotor.Direction.REVERSE);
+        duckDrive.setDirection(DcMotor.Direction.FORWARD);
         intakeDrive.setDirection(DcMotor.Direction.REVERSE);
         slideDrive.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -61,15 +63,17 @@ public class Drive {
         rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-     CLSck ;nk
         slideDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slideDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         servo.getController().pwmEnable();
+        ramp.getController().pwmEnable();
         servo.setPosition(0.5);
+        ramp.setPosition(0.5);
+
         duckDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        ds = new DuckSpinner(duckDrive, -0.3,1500,-0.7,200);
+        ds = new DuckSpinner(duckDrive, -0.2,1500,-0.7,200);
         t = new Thread(ds);
 
 
@@ -81,7 +85,7 @@ public class Drive {
 
         double r = Math.hypot(gamepad.left_stick_x, gamepad.left_stick_y);
         double robotAngle = Math.atan2(-gamepad.left_stick_y, gamepad.left_stick_x) - Math.PI / 4;
-        double rightX = gamepad.right_stick_x;
+        double rightX = gamepad.right_stick_x/2;
         double[] v = new double[4];
         v[0] = r * Math.cos(robotAngle) + rightX;
         v[1] = r * Math.sin(robotAngle) - rightX;
@@ -129,41 +133,38 @@ public class Drive {
 //            st = new Thread(new Slide(position, slideDrive, servo, telemetry));
 //            st.run();
 //        }
-        telemetry.addData("d",position + " " + slideDrive.getPower());
+        telemetry.addData("d",position + " " + slideDrive.getTargetPosition());
+
+            //slideDrive.setPower(0);
         switch(position){
             case 1:
-                if(!slideDrive.isBusy()) {
-                    slideDrive.setTargetPosition(0);
-                    slideDrive.setPower(1);
-                    slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                }
-                if(slideDrive.getCurrentPosition() >= -1500) servo.setPosition(0.5);
+                slideDrive.setTargetPosition(0);
+                slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                slideDrive.setPower(1);
+                if(slideDrive.getCurrentPosition() >= -400) servo.setPosition(0.5);
                 else servo.setPosition(0.3);
                 break;
             case 2:
-                if(!slideDrive.isBusy()) {
-                    slideDrive.setTargetPosition(-7250);
-                    slideDrive.setPower(1);
-                    slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                }
-                if(slideDrive.getCurrentPosition() <= -7000) servo.setPosition(0);
-                else if(slideDrive.getCurrentPosition() >= -1600) servo.setPosition(0.5);
+                slideDrive.setTargetPosition(-3000);
+                slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                slideDrive.setPower(1);
+                if(slideDrive.getCurrentPosition() <= -3000) servo.setPosition(0);
+                else if(slideDrive.getCurrentPosition() >= -400) servo.setPosition(0.5);
                 else servo.setPosition(0.3);
                 break;
             case 3:
-                if(!slideDrive.isBusy()){
-                    slideDrive.setTargetPosition(-10000);
-                    slideDrive.setPower(1);
-                    slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                }
-                if(slideDrive.getCurrentPosition() <= -9900) servo.setPosition(0);
-                else if(slideDrive.getCurrentPosition() >= -1600) servo.setPosition(0.5);
+                slideDrive.setTargetPosition(-4400);
+                slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                slideDrive.setPower(1);
+                if(slideDrive.getCurrentPosition() <= -4300) servo.setPosition(0);
+                else if(slideDrive.getCurrentPosition() >= -400) servo.setPosition(0.5);
                 else servo.setPosition(0.3);
                 break;
             default:
                 break;
-
         }
+        if(slideDrive.getCurrentPosition() >  slideDrive.getTargetPosition()-50 && slideDrive.getCurrentPosition() < slideDrive.getTargetPosition() + 50)
+            slideDrive.setPower(0);
     }
 
     public DcMotor getLeftFrontDrive() {
