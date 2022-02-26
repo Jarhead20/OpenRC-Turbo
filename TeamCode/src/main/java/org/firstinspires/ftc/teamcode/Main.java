@@ -39,6 +39,7 @@ public class Main extends OpMode
     
     @Override
     public void loop() {
+        if(runtime.seconds() >= 120) stop();
         if(gamepad2.a) drive.runDuck();
         if(gamepad2.x) drive.stopDuck();
 
@@ -53,7 +54,7 @@ public class Main extends OpMode
         }
 
         telemetry.addData("Degrees:", drive.servo.getPosition());
-        if(gamepad2.dpad_right) temp = !temp;
+        if(gamepad2.left_bumper) temp = !temp;
         telemetry.addData("temp",temp);
         if(temp){
             if(gamepad2.dpad_up) drive.position=3;
@@ -69,9 +70,10 @@ public class Main extends OpMode
             drive.slideDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             drive.slideDrive.setPower(gamepad2.left_stick_y*(1-gamepad2.right_trigger));
             telemetry.addData("ooga booga", "ooga booga");
+            drive.ramp.setPosition(0.5-gamepad2.left_trigger/2);
         }
 
-        drive.ramp.setPosition(0.5-gamepad2.left_trigger/2);
+
         telemetry.addData("1", drive.slideDrive.getCurrentPosition() + " " + drive.slideDrive.getTargetPosition());
 
         drive.setMultiplier((gamepad1.right_trigger/2)+0.5);

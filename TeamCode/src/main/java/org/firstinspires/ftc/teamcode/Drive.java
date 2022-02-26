@@ -141,24 +141,53 @@ public class Drive {
                 slideDrive.setTargetPosition(0);
                 slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 slideDrive.setPower(1);
-                if(slideDrive.getCurrentPosition() >= -400) servo.setPosition(0.5);
-                else servo.setPosition(0.3);
+                if(slideDrive.getCurrentPosition() >= -400)  {
+                    ramp.setPosition(0.5);
+                    servo.setPosition(0.5);
+                }
+                else {
+                    ramp.setPosition(0.5);
+                    servo.setPosition(0.5);
+                }
                 break;
             case 2:
-                slideDrive.setTargetPosition(-3000);
+                slideDrive.setTargetPosition(-3500);
                 slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 slideDrive.setPower(1);
-                if(slideDrive.getCurrentPosition() <= -3000) servo.setPosition(0);
+                if(slideDrive.getCurrentPosition() <= -3400)  {
+                    ramp.setPosition(0.2);
+                    servo.setPosition(0);
+                }
                 else if(slideDrive.getCurrentPosition() >= -400) servo.setPosition(0.5);
-                else servo.setPosition(0.3);
+                else {
+                    ramp.setPosition(0.5);
+                    servo.setPosition(0.3);
+                }
                 break;
             case 3:
+
                 slideDrive.setTargetPosition(-4400);
                 slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 slideDrive.setPower(1);
-                if(slideDrive.getCurrentPosition() <= -4300) servo.setPosition(0);
+                if(slideDrive.getCurrentPosition() <= -4300) {
+                    ramp.setPosition(0.3);
+                    servo.setPosition(0);
+                }
                 else if(slideDrive.getCurrentPosition() >= -400) servo.setPosition(0.5);
-                else servo.setPosition(0.3);
+                else {
+                    ramp.setPosition(0.5);
+                    servo.setPosition(0.3);
+                }
+                break;
+            case 4:
+                slideDrive.setTargetPosition(-300);
+                slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                slideDrive.setPower(1);
+                if(slideDrive.getCurrentPosition() >= -400) servo.setPosition(0.5);
+                else {
+                    ramp.setPosition(0.5);
+                    servo.setPosition(0.3);
+                }
                 break;
             default:
                 break;
