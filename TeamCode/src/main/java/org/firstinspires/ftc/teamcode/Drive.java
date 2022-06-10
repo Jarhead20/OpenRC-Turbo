@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.sax.TextElementListener;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -23,177 +24,60 @@ public class Drive {
     private DcMotor rightFrontDrive = null;
     private DcMotor leftBackDrive = null;
     private DcMotor rightBackDrive = null;
-    private DcMotor duckDrive = null;
-    private DcMotor intakeDrive = null;
-    public DcMotor slideDrive = null;
-    public  Servo servo = null;
-    private DuckSpinner ds;
-    public Servo ramp = null;
-    private Thread t;
-    public int position = 0;
+    public BNO055IMU imu = null;
     private double multiplier = 1;
-    public final double MIN_POSITION = 0, MAX_POSITION = 1;
-    public double servoPosition = 0.5;
 
-    public Drive(HardwareMap map, Telemetry telemetry){
+    public Drive(HardwareMap map, Telemetry telemetry) {
         this.map = map;
         this.telemetry = telemetry;
     }
-    public void setup(){
-        leftFrontDrive  = map.get(DcMotor.class, "leftFront");
+
+    public void setup() {
+        leftFrontDrive = map.get(DcMotor.class, "leftFront");
         rightFrontDrive = map.get(DcMotor.class, "rightFront");
-        leftBackDrive  = map.get(DcMotor.class, "leftRear");
+        leftBackDrive = map.get(DcMotor.class, "leftRear");
         rightBackDrive = map.get(DcMotor.class, "rightRear");
-        duckDrive = map.get(DcMotor.class, "duck");
-        intakeDrive = map.get(DcMotor.class, "intake");
-        slideDrive = map.get(DcMotor.class, "slide");
-        servo = map.get(Servo.class, "servo");
-        ramp = map.get(Servo.class, "ramp");
 
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        duckDrive.setDirection(DcMotor.Direction.FORWARD);
-        intakeDrive.setDirection(DcMotor.Direction.REVERSE);
-        slideDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        slideDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        slideDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        servo.getController().pwmEnable();
-        ramp.getController().pwmEnable();
-        servo.setPosition(0.5);
-        ramp.setPosition(0.5);
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
 
-        duckDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        parameters.mode = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled = false;
 
-        ds = new DuckSpinner(duckDrive, -0.2,1500,-0.7,200);
-        t = new Thread(ds);
-
-
+        imu = map.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
 
         telemetry.addData("Status", "Setup");
     }
 
-    public void mecanum(Gamepad gamepad){
+    public void mecanum(Gamepad gamepad) {
+        double angle = Math.atan2(gamepad.left_stick_y,gamepad.left_stick_y) + imu.getAngularOrientation().firstAngle;
+        double power = Math.max(-1, Math.min(1, Math.hypot(gamepad.left_stick_x,gamepad.left_stick_y)));
+        double x = Math.cos(angle) * power;
+        double y = Math.sin(angle) * power;
+        double turning = gamepad.right_stick_x;
 
-        double r = Math.hypot(gamepad.left_stick_x, gamepad.left_stick_y);
-        double robotAngle = Math.atan2(-gamepad.left_stick_y, gamepad.left_stick_x) - Math.PI / 4;
-        double rightX = gamepad.right_stick_x/2;
-        double[] v = new double[4];
-        v[0] = r * Math.cos(robotAngle) + rightX;
-        v[1] = r * Math.sin(robotAngle) - rightX;
-        v[2] = r * Math.sin(robotAngle) + rightX;
-        v[3] = r * Math.cos(robotAngle) - rightX;
-        double max = 0;
-        for (int i = 0; i < 4; i++) {
-            if(Math.abs(v[i]) > max) max = Math.abs(v[i]);
-        }
-        max = Range.clip(max,-1,1);
-        DecimalFormat df = new DecimalFormat("0.00");
-//        telemetry.addData("Status", "max: " + max);
-        for (int i = 0; i < 4; i++) {
-            double e = v[i] / max;
-//            telemetry.addData("Status", df.format(e) + " " + df.format(v[i]) + " " + df.format(max));
-            v[i] = e;
-        }
-        leftFrontDrive.setPower(v[0]*multiplier);
-        rightFrontDrive.setPower(v[1]*multiplier);
-        leftBackDrive.setPower(v[2]*multiplier);
-        rightBackDrive.setPower(v[3]*multiplier);
-//        telemetry.addData("Status", v[0]);
-//        telemetry.addData("Status", v[1]);
-//        telemetry.addData("Status", v[2]);
-//        telemetry.addData("Status", v[3]);
-    }
+        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(turning), 1);
+        double frontLeftPower = (y + x + turning) / denominator;
+        double backLeftPower = (y - x + turning) / denominator;
+        double frontRightPower = (y - x - turning) / denominator;
+        double backRightPower = (y + x - turning) / denominator;
 
-    public void runDuck(){
-        if(!t.isAlive()) t.start();
-    }
-    public void stopDuck(){
-        if(!t.isInterrupted() && t.isAlive()) {
-            t.interrupt();
-            duckDrive.setPower(0);
-        }
-    }
-
-    public void runIntake(){ intakeDrive.setPower(1); }
-    public void stopIntake(){ intakeDrive.setPower(0); }
-
-    public void slide(int position){
-        //9 rotations for full extension
-
-//        if(!st.isAlive()) {
-//            st = new Thread(new Slide(position, slideDrive, servo, telemetry));
-//            st.run();
-//        }
-        telemetry.addData("d",position + " " + slideDrive.getTargetPosition());
-
-            //slideDrive.setPower(0);
-        switch(position){
-            case 1:
-                slideDrive.setTargetPosition(0);
-                slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                slideDrive.setPower(1);
-                if(slideDrive.getCurrentPosition() >= -400)  {
-                    ramp.setPosition(0.5);
-                    servo.setPosition(0.5);
-                }
-                else {
-                    ramp.setPosition(0.5);
-                    servo.setPosition(0.5);
-                }
-                break;
-            case 2:
-                slideDrive.setTargetPosition(-3500);
-                slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                slideDrive.setPower(1);
-                if(slideDrive.getCurrentPosition() <= -3400)  {
-                    ramp.setPosition(0.2);
-                    servo.setPosition(0);
-                }
-                else if(slideDrive.getCurrentPosition() >= -400) servo.setPosition(0.5);
-                else {
-                    ramp.setPosition(0.5);
-                    servo.setPosition(0.3);
-                }
-                break;
-            case 3:
-
-                slideDrive.setTargetPosition(-4400);
-                slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                slideDrive.setPower(1);
-                if(slideDrive.getCurrentPosition() <= -4300) {
-                    ramp.setPosition(0.3);
-                    servo.setPosition(0);
-                }
-                else if(slideDrive.getCurrentPosition() >= -400) servo.setPosition(0.5);
-                else {
-                    ramp.setPosition(0.5);
-                    servo.setPosition(0.3);
-                }
-                break;
-            case 4:
-                slideDrive.setTargetPosition(-300);
-                slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                slideDrive.setPower(1);
-                if(slideDrive.getCurrentPosition() >= -400) servo.setPosition(0.5);
-                else {
-                    ramp.setPosition(0.5);
-                    servo.setPosition(0.3);
-                }
-                break;
-            default:
-                break;
-        }
-        if(slideDrive.getCurrentPosition() >  slideDrive.getTargetPosition()-50 && slideDrive.getCurrentPosition() < slideDrive.getTargetPosition() + 50)
-            slideDrive.setPower(0);
+        leftFrontDrive.setPower(frontLeftPower);
+        leftBackDrive.setPower(backLeftPower);
+        rightFrontDrive.setPower(frontRightPower);
+        rightBackDrive.setPower(backRightPower);
     }
 
     public DcMotor getLeftFrontDrive() {
@@ -204,19 +88,14 @@ public class Drive {
         return rightFrontDrive;
     }
 
-    public DcMotor getLeftBackDrive() { return leftBackDrive; }
+    public DcMotor getLeftBackDrive() {
+        return leftBackDrive;
+    }
 
     public DcMotor getRightBackDrive() {
         return rightBackDrive;
     }
 
-    public DcMotor getDuck() {
-        return duckDrive;
-    }
-
-    public DcMotor getIntake() {
-        return intakeDrive;
-    }
 
     public double getMultiplier() {
         return multiplier;
@@ -225,34 +104,4 @@ public class Drive {
     public void setMultiplier(double multiplier) {
         this.multiplier = multiplier;
     }
-
 }
-
-class DuckSpinner implements Runnable {
-    private DcMotor duck;
-    private double s1;
-    private long t1;
-    private double s2;
-    private long t2;
-    public DuckSpinner(DcMotor duck, double s1, long t1, double s2, long t2){
-        this.duck = duck;
-        this.s1 = s1;
-        this.t1 = t1;
-        this.s2 = s2;
-        this.t2 = t2;
-    }
-
-    @Override
-    public void run() {
-        try {
-            duck.setPower(s1);
-            Thread.sleep(t1);
-            duck.setPower(s2);
-            Thread.sleep(t2);
-            duck.setPower(0);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-}
-
