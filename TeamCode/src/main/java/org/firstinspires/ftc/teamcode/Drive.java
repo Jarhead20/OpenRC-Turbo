@@ -33,10 +33,10 @@ public class Drive {
     }
 
     public void setup() {
-        leftFrontDrive = map.get(DcMotor.class, "leftFront");
-        rightFrontDrive = map.get(DcMotor.class, "rightFront");
-        leftBackDrive = map.get(DcMotor.class, "leftRear");
-        rightBackDrive = map.get(DcMotor.class, "rightRear");
+        leftFrontDrive = map.get(DcMotor.class, "Motor 1");
+        rightFrontDrive = map.get(DcMotor.class, "Motor 0");
+        leftBackDrive = map.get(DcMotor.class, "Motor 3");
+        rightBackDrive = map.get(DcMotor.class, "Motor 4");
 
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);

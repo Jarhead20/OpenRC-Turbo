@@ -23,21 +23,6 @@ public class Main extends OpMode
         telemetry.addData("Status", "Initialized");
         drive = new Drive(hardwareMap,telemetry);
         drive.setup();
-
-//        drive.slideDrive.setTargetPosition(-10000);
-//        drive.slideDrive.setPower(0.5);
-//        drive.slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//
-//            System.out.println(drive.slideDrive.getCurrentPosition());
-//            telemetry.addData("Status", "Waiting for the motor to reach its target");
-//            telemetry.update();
-//            if(drive.slideDrive.getCurrentPosition() <= -9900) {
-//                drive.servo.setPosition(0);
-//            }
-//            else if(drive.slideDrive.getCurrentPosition() >= -1600) drive.servo.setPosition(0.5);
-//
-//            else drive.servo.setPosition(0.3);
-
     }
 
     @Override
