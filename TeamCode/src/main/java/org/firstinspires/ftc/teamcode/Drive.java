@@ -33,10 +33,10 @@ public class Drive {
     }
 
     public void setup() {
-        leftFrontDrive = map.get(DcMotor.class, "Motor 1");
-        rightFrontDrive = map.get(DcMotor.class, "Motor 0");
-        leftBackDrive = map.get(DcMotor.class, "Motor 3");
-        rightBackDrive = map.get(DcMotor.class, "Motor 4");
+        leftFrontDrive = map.get(DcMotor.class, "Motor1");
+        rightFrontDrive = map.get(DcMotor.class, "Motor0");
+        leftBackDrive = map.get(DcMotor.class, "Motor2");
+        rightBackDrive = map.get(DcMotor.class, "Motor3");
 
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -62,7 +62,7 @@ public class Drive {
     }
 
     public void mecanum(Gamepad gamepad) {
-        double angle = Math.atan2(gamepad.left_stick_y,gamepad.left_stick_y) + imu.getAngularOrientation().firstAngle;
+        double angle = Math.atan2(gamepad.left_stick_y,gamepad.left_stick_y); //+ imu.getAngularOrientation().firstAngle;
         double power = Math.max(-1, Math.min(1, Math.hypot(gamepad.left_stick_x,gamepad.left_stick_y)));
         double x = Math.cos(angle) * power;
         double y = Math.sin(angle) * power;
