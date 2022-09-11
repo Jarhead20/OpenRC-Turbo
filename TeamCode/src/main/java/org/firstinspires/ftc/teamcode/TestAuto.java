@@ -5,18 +5,10 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.profile.MotionProfile;
-import com.acmerobotics.roadrunner.profile.MotionProfileGenerator;
-import com.acmerobotics.roadrunner.profile.MotionState;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.util.NanoClock;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -27,13 +19,6 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
-import java.util.List;
-
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 @Config
 @Autonomous(group = "drive")
 public class TestAuto extends LinearOpMode {
@@ -130,10 +115,12 @@ public class TestAuto extends LinearOpMode {
 
 
         telemetry.addData("Realtime analysis", TSEPos);
-
+//        Pose2d test = new Pose2d(-53.2,41.6, Math.toRadians(-79)), Math.toRadians(-79);
         deposit = drive.trajectoryBuilder(startPose, true)
 
-                //.splineTo(new Vector2d(-10,-40),Math.toRadians(90))
+
+
+                .splineTo(new Vector2d(-10,-40),Math.toRadians(90))
                 .addDisplacementMarker(() -> state = State.EXTEND)
                 .build();
 
@@ -143,6 +130,7 @@ public class TestAuto extends LinearOpMode {
 
                 //.splineTo(new Vector2d(-70, -60), Math.toRadians(180))
                 .addDisplacementMarker(() -> {
+<<<<<<< HEAD
 //                    try {
 ////                        d.getDuck().setPower(-0.2);
 ////                        Thread.sleep(6000);
@@ -150,6 +138,8 @@ public class TestAuto extends LinearOpMode {
 //                    } catch (InterruptedException e) {
 //                        e.printStackTrace();
 //                    }
+=======
+>>>>>>> a8e7d4f06bedc1be891fb9b15477ed8c13a910b8
                 })
 
                 .back(10)
@@ -158,21 +148,7 @@ public class TestAuto extends LinearOpMode {
                 //.splineToConstantHeading(new Vector2d(55, -65), Math.toRadians(180))
                 .build();
 
-//
-//        duck2 = drive.trajectoryBuilder(startPose)
-//                .splineTo(new Vector2d(-70, -60), Math.toRadians(180))
-//                .addDisplacementMarker(() -> {
-//                    try {
-//                        d.getDuck().setPower(-0.2);
-//                        Thread.sleep(6000);
-//                        d.getDuck().setPower(0);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                })
 
-//                .splineToConstantHeading(new Vector2d(55, -65), Math.toRadians(180))
-//                .build();
         if(isStopRequested()) return;
 
         drive.followTrajectorySequence(duck1);
