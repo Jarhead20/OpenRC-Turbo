@@ -11,13 +11,8 @@ android {
     defaultConfig {
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 88
-        versionName "17.3"
-
-        renderscriptTargetApi 28
-        renderscriptSupportModeEnabled true
-        renderscriptNdkModeEnabled false
-        buildConfigField "int", "RS_TARGET_API", "28"
+        versionCode 91
+        versionName "17.6"
 
         buildConfigField "String", "SDK_BUILD_TIME", '"' + (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ROOT).format(new Date())) + '"'
         buildConfigField "int", "SDK_MAJOR_VERSION", versionNumbers.getProperty("MAJOR_VERSION")
@@ -39,7 +34,7 @@ android {
         debug {
             debuggable true
             jniDebuggable true
-            renderscriptDebuggable true
+
             ndk {
                 abiFilters "armeabi-v7a"
             }
