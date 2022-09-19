@@ -1085,6 +1085,10 @@ Blockly.FtcJava.generateImportStatement_ = function(type) {
 }
 
 Blockly.FtcJava.generateImport_ = function(type) {
+  // For arrays, only import the base.
+  if (type.endsWith('[]')) {
+    type = type.substring(0, type.length - 2); // 2 is length of []
+  }
   // For inner classes, only import the outer class.
   var dot = type.indexOf('.');
   if (dot > -1) {
@@ -1143,6 +1147,13 @@ Blockly.FtcJava.importDeclareAssign_ = function(block, identifierFieldName, java
       // androidTextToSpeechIdentifierForFtcJava is defined dynamically in
       // HardwareUtil.fetchJavaScriptForHardware().
       identifierForFtcJava = identifier = androidTextToSpeechIdentifierForFtcJava;
+      rvalue = 'new ' + javaType + '()';
+      needsToBeClosed = true;
+      break;
+    case 'Tfod':
+      // tfodIdentifierForFtcJava is defined dynamically in
+      // HardwareUtil.fetchJavaScriptForHardware().
+      identifierForFtcJava = identifier = tfodIdentifierForFtcJava;
       rvalue = 'new ' + javaType + '()';
       needsToBeClosed = true;
       break;

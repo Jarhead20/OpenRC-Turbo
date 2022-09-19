@@ -2,121 +2,46 @@ package com.example.meepmeeptesting;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.MarkerCallback;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.noahbres.meepmeep.MeepMeep;
-import com.noahbres.meepmeep.core.colorscheme.scheme.ColorSchemeRedDark;
+import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
+import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 public class MeepMeepTesting {
     public static void main(String[] args) {
-        // TODO: If you experience poor performance, enable this flag
-         System.setProperty("sun.java2d.opengl", "true");
+        MeepMeep meepMeep = new MeepMeep(800);
 
-        // Declare a MeepMeep instance
-        // With a field size of 800 pixels
-        MeepMeep mm = new MeepMeep(900)
-                // Set field image
-                .setBackground(MeepMeep.Background.FIELD_FREIGHT_FRENZY)
-                // Set theme
-                .setBotDimensions(12,16)
-                .setTheme(new ColorSchemeRedDark())
-                // Background opacity from 0-1
-                .setBackgroundAlpha(1f)
-                // Set constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(20, 20, Math.toRadians(180), Math.toRadians(180), 10)
+
+        RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
+                // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
+                .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(10, -65, Math.toRadians(270)))
-                                .setReversed(true)
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("extend slide");
-                                })
-                                .splineTo(new Vector2d(0,-40),Math.toRadians(120))
-
-                                .setReversed(false)
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("spin servo");
-                                })
-//                                .addDisplacementMarker()
-//                                .splineToConstantHeading()
-                                .splineTo(new Vector2d(23,-63),Math.toRadians(0))
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("spin intake");
-                                    System.out.println("retract slide");
-                                })
-                                .forward(30)
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("stop intake");
-                                })
-                                .back(30)
-                                .setReversed(true)
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("extend slide");
-                                })
-                                .splineTo(new Vector2d(0,-40),Math.toRadians(120))
-
-                                .setReversed(false)
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("spin servo");
-                                })
-//                                .addDisplacementMarker()
-//                                .splineToConstantHeading()
-                                .splineTo(new Vector2d(23,-63),Math.toRadians(0))
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("spin intake");
-                                    System.out.println("retract slide");
-                                })
-                                .forward(30)
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("stop intake");
-                                })
-                                .back(30)
-                                .setReversed(true)
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("extend slide");
-                                })
-                                .splineTo(new Vector2d(0,-40),Math.toRadians(120))
-
-                                .setReversed(false)
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("spin servo");
-                                })
-//                                .addDisplacementMarker()
-//                                .splineToConstantHeading()
-                                .splineTo(new Vector2d(23,-63),Math.toRadians(0))
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("spin intake");
-                                    System.out.println("retract slide");
-                                })
-                                .forward(30)
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("stop intake");
-                                })
-                                .back(30)
-                                .setReversed(true)
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("extend slide");
-                                })
-                                .splineTo(new Vector2d(0,-40),Math.toRadians(120))
-
-                                .setReversed(false)
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("spin servo");
-                                })
-//                                .addDisplacementMarker()
-//                                .splineToConstantHeading()
-                                .splineTo(new Vector2d(23,-63),Math.toRadians(0))
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("spin intake");
-                                    System.out.println("retract slide");
-                                })
-                                .forward(30)
-                                .addDisplacementMarker(() -> {
-                                    System.out.println("stop intake");
-                                })
-                                .back(30)
+                        drive.trajectorySequenceBuilder(new Pose2d(-0.5,-61.0, Math.toRadians(0.0)))
+                                .splineToSplineHeading(new Pose2d(26.875,-51.25,Math.toRadians(19.604088150829426)),Math.toRadians(19.604088150829426))
+                                .splineToSplineHeading(new Pose2d(34.125,-24.5,Math.toRadians(74.83553910026156)),Math.toRadians(74.83553910026156))
+                                .splineToSplineHeading(new Pose2d(4.25,-5.625,Math.toRadians(147.71533698889476)),Math.toRadians(147.71533698889476))
+                                .splineToSplineHeading(new Pose2d(-34.375,2.0,Math.toRadians(168.83277153852663)),Math.toRadians(168.83277153852663))
+                                .splineToSplineHeading(new Pose2d(-49.625,-22.5,Math.toRadians(238.0998430822663)),Math.toRadians(238.0998430822663))
+                                .splineToSplineHeading(new Pose2d(-43.625,-42.25,Math.toRadians(-73.10135130596177)),Math.toRadians(-73.10135130596177))
+                                .splineToSplineHeading(new Pose2d(-22.75,-48.0,Math.toRadians(-15.400170999529408)),Math.toRadians(-15.400170999529408))
+                                .splineToSplineHeading(new Pose2d(-3.375,-34.5,Math.toRadians(34.86778843419524)),Math.toRadians(34.86778843419524))
+                                .splineToSplineHeading(new Pose2d(5.25,-17.875,Math.toRadians(62.57985142665528)),Math.toRadians(62.57985142665528))
+                                .splineToSplineHeading(new Pose2d(-23.875,-12.0,Math.toRadians(168.595520120853)),Math.toRadians(168.595520120853))
+                                .splineToSplineHeading(new Pose2d(-11.625,12.625,Math.toRadians(63.55140349896741)),Math.toRadians(63.55140349896741))
+                                .splineToSplineHeading(new Pose2d(15.875,17.75,Math.toRadians(10.556744755718213)),Math.toRadians(10.556744755718213))
+                                .splineToSplineHeading(new Pose2d(37.625,31.125,Math.toRadians(31.589126435617537)),Math.toRadians(31.589126435617537))
+                                .splineToSplineHeading(new Pose2d(-3.25,47.5,Math.toRadians(158.1683871534975)),Math.toRadians(158.1683871534975))
+                                .splineToSplineHeading(new Pose2d(-34.125,37.875,Math.toRadians(197.3143918691125)),Math.toRadians(197.3143918691125))
+                                .splineToSplineHeading(new Pose2d(-57.0,22.625,Math.toRadians(213.6900675259798)),Math.toRadians(213.6900675259798))
+                                .splineToSplineHeading(new Pose2d(-58.625,4.875,Math.toRadians(264.7691928244468)),Math.toRadians(264.7691928244468))
                                 .build()
-                )
+
+                );
+
+        meepMeep.setBackground(MeepMeep.Background.FIELD_FREIGHTFRENZY_ADI_DARK)
+                .setDarkMode(true)
+                .setBackgroundAlpha(0.95f)
+                .addEntity(myBot)
                 .start();
     }
 }

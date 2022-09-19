@@ -18,7 +18,7 @@
 var titlePrefix = 'FTC';
 var currentProjectName;
 var currentClassName = '';
-var isDirty = false;
+var savedBlkFileContent;
 var missingHardware = [];
 var blockIdsWithMissingHardware = [];
 var WarningBits = {
@@ -202,7 +202,6 @@ function knownTypeToClassName(type) {
       return 'com.qualcomm.robotcore.eventloop.opmode.' + type;
     case 'AccelerationSensor':
     case 'AnalogInput':
-    case 'AnalogOutput':
     case 'CRServo':
     case 'ColorSensor':
     case 'CompassSensor':
@@ -217,6 +216,8 @@ function knownTypeToClassName(type) {
     case 'DigitalChannel.Mode':
     case 'DistanceSensor':
     case 'Gamepad':
+    case 'Gamepad.LedEffect':
+    case 'Gamepad.LedEffect.Builder':
     case 'Gamepad.RumbleEffect':
     case 'Gamepad.RumbleEffect.Builder':
     case 'GyroSensor':
@@ -252,6 +253,18 @@ function knownTypeToClassName(type) {
     case 'ReadWriteFile':
     case 'RobotLog':
       return 'com.qualcomm.robotcore.util.' + type;
+    case 'Boolean':
+    case 'Byte':
+    case 'Character':
+    case 'Double':
+    case 'Float':
+    case 'Integer':
+    case 'Long':
+    case 'Number':
+    case 'Object':
+    case 'Short':
+    case 'String':
+      return 'java.lang.' + type;
     case 'ArrayList':
     case 'Collections':
     case 'List':
@@ -259,6 +272,7 @@ function knownTypeToClassName(type) {
     case 'ClassFactory':
     case 'JavaUtil':
     case 'Telemetry':
+    case 'Telemetry.DisplayFormat':
       return 'org.firstinspires.ftc.robotcore.external.' + type;
     case 'AndroidAccelerometer':
     case 'AndroidGyroscope':
@@ -307,6 +321,7 @@ function knownTypeToClassName(type) {
     case 'AppUtil':
       return 'org.firstinspires.ftc.robotcore.internal.system.' + type;
     case 'Recognition':
+    case 'Tfod':
     case 'TfodBase':
     case 'TfodCurrentGame':
     case 'TfodCustomModel':

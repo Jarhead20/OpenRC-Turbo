@@ -41,7 +41,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.PtzCont
 import org.firstinspires.ftc.robotcore.internal.system.Tracer;
 
 /**
- * A {@link PtzControl} that caches state from another gain control
+ * A {@link PtzControl} that caches state from another PTZ control
  */
 @SuppressWarnings("WeakerAccess")
 public class CachingPtzControl implements PtzControl, DelegatingCameraControl
