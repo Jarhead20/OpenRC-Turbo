@@ -130,16 +130,6 @@ public class TestAuto extends LinearOpMode {
 
                 //.splineTo(new Vector2d(-70, -60), Math.toRadians(180))
                 .addDisplacementMarker(() -> {
-<<<<<<< HEAD
-//                    try {
-////                        d.getDuck().setPower(-0.2);
-////                        Thread.sleep(6000);
-////                        d.getDuck().setPower(0);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-=======
->>>>>>> a8e7d4f06bedc1be891fb9b15477ed8c13a910b8
                 })
 
                 .back(10)
