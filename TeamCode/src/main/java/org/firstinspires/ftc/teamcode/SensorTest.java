@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Blinker;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -26,6 +28,8 @@ public class SensorTest extends OpMode
     private TouchSensor mag = null;
     private DistanceSensor distance = null;
     private ColorSensor color = null;
+    private RevBlinkinLedDriver blinker = null;
+    private RevBlinkinLedDriver.BlinkinPattern pattern = null;
 
     @Override
     public void init() {
@@ -36,7 +40,8 @@ public class SensorTest extends OpMode
         mag = hardwareMap.get(TouchSensor.class, "mag");
         distance = hardwareMap.get(DistanceSensor.class, "distance");
         color = hardwareMap.get(ColorSensor.class, "color");
-
+        blinker = hardwareMap.get(RevBlinkinLedDriver.class, "blink");
+        pattern = RevBlinkinLedDriver.BlinkinPattern.AQUA;
     }
 
     @Override
@@ -51,6 +56,7 @@ public class SensorTest extends OpMode
 
     @Override
     public void loop() {
+        blinker.setPattern(pattern);
         telemetry.addData("b", distance.getDistance(DistanceUnit.CM));
         telemetry.addData("e", sensor.isPressed());
         telemetry.addData("a", mag.isPressed());
