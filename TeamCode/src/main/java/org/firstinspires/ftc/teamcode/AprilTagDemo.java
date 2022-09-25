@@ -98,9 +98,17 @@ public class AprilTagDemo extends LinearOpMode
                     if(detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
                     for(AprilTagDetection detection : detections)
                     {
-                        if(detection.pose.x < 0) System.out.println(1);
-                        else if(detection.pose.x > 1 && detection.pose.x > 1) System.out.println(3);
-                        else if(detection.pose.x < 1 && detection.pose.x > 0) System.out.println(2);
+                        switch(detection.id){
+                            case 10:
+                                System.out.println(1);
+                                break;
+                            case 11:
+                                System.out.println(2);
+                                break;
+                            case 21:
+                                System.out.println(3);
+                                break;
+                        }
                     }
                 }
                 telemetry.update();
