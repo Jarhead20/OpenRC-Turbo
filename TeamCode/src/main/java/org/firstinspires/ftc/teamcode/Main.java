@@ -17,12 +17,22 @@ public class Main extends OpMode
 {
     private ElapsedTime runtime = new ElapsedTime();
     private Drive drive;
+    private DcMotor arm = null;
+    private int total = 0;
+    private double speed = 0;
 
     @Override
     public void init() {
         telemetry.addData("Status", "Initialized");
+        arm = hardwareMap.get(DcMotor.class, "arm");
         drive = new Drive(hardwareMap,telemetry);
         drive.setup();
+        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        arm.setTargetPosition(0);
+//        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
     }
 
     @Override
@@ -38,8 +48,13 @@ public class Main extends OpMode
     @Override
     public void loop() {
         if(!drive.imu.isGyroCalibrated()) return;
+        total += gamepad2.left_stick_y*2;
 
-        drive.setMultiplier(1-gamepad1.right_trigger);
+        arm.setPower(gamepad2.left_stick_y);
+        drive.setMultiplier(0.5);
+        if(gamepad1.right_bumper)
+            drive.setMultiplier(1);
+        telemetry.addData(arm.getTargetPosition() + " ",arm.getCurrentPosition());
         drive.mecanum(gamepad1);
     }
 

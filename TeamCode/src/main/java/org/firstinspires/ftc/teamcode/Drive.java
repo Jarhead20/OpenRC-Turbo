@@ -33,15 +33,15 @@ public class Drive {
     }
 
     public void setup() {
-        leftFrontDrive = map.get(DcMotor.class, "leftFront");
-        rightFrontDrive = map.get(DcMotor.class, "rightFront");
-        leftBackDrive = map.get(DcMotor.class, "leftRear");
-        rightBackDrive = map.get(DcMotor.class, "rightRear");
+        leftFrontDrive = map.get(DcMotor.class, "Motor0");
+        rightFrontDrive = map.get(DcMotor.class, "Motor1");
+        leftBackDrive = map.get(DcMotor.class, "Motor2");
+        rightBackDrive = map.get(DcMotor.class, "Motor3");
 
-        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -62,22 +62,36 @@ public class Drive {
     }
 
     public void mecanum(Gamepad gamepad) {
-        double angle = Math.atan2(gamepad.left_stick_y,gamepad.left_stick_y) + imu.getAngularOrientation().firstAngle;
-        double power = Math.max(-1, Math.min(1, Math.hypot(gamepad.left_stick_x,gamepad.left_stick_y)));
-        double x = Math.cos(angle) * power;
-        double y = Math.sin(angle) * power;
-        double turning = gamepad.right_stick_x;
 
-        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(turning), 1);
-        double frontLeftPower = (y + x + turning) / denominator;
-        double backLeftPower = (y - x + turning) / denominator;
-        double frontRightPower = (y - x - turning) / denominator;
-        double backRightPower = (y + x - turning) / denominator;
-
-        leftFrontDrive.setPower(frontLeftPower);
-        leftBackDrive.setPower(backLeftPower);
-        rightFrontDrive.setPower(frontRightPower);
-        rightBackDrive.setPower(backRightPower);
+        double r = Math.hypot(gamepad.left_stick_x, gamepad.left_stick_y) * multiplier;
+        double robotAngle = Math.atan2(-gamepad.left_stick_y, gamepad.left_stick_x) - Math.PI / 4;
+        telemetry.addData("angle", robotAngle);
+        double rightX = gamepad.right_stick_x;
+        double[] v = new double[4];
+        v[0] = r * Math.cos(robotAngle) + rightX;
+        v[1] = r * Math.sin(robotAngle) - rightX;
+        v[2] = r * Math.sin(robotAngle) + rightX;
+        v[3] = r * Math.cos(robotAngle) - rightX;
+//        double max = 0;
+//        for (int i = 0; i < 4; i++) {
+//            if (Math.abs(v[i]) > max) max = Math.abs(v[i]);
+//        }
+//        max = Range.clip(max, -1, 1);
+//        DecimalFormat df = new DecimalFormat("0.00");
+//        telemetry.addData("Status", "max: " + max);
+//        for (int i = 0; i < 4; i++) {
+//            double e = v[i] / max;
+//            telemetry.addData("Status", df.format(e) + " " + df.format(v[i]) + " " + df.format(max));
+//            v[i] = e;
+//        }
+        telemetry.addData("0", v[0]);
+        telemetry.addData("1", v[1]);
+        telemetry.addData("2", v[2]);
+        telemetry.addData("3", v[3]);
+        leftFrontDrive.setPower(v[0]);
+        rightFrontDrive.setPower(v[1]);
+        leftBackDrive.setPower(v[2]);
+        rightBackDrive.setPower(v[3]);
     }
 
     public DcMotor getLeftFrontDrive() {
