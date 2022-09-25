@@ -5,6 +5,7 @@ import android.sax.TextElementListener;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -16,7 +17,6 @@ import org.firstinspires.ftc.robotcore.internal.usb.UsbSerialNumber;
 
 import java.text.DecimalFormat;
 
-
 public class Drive {
     private HardwareMap map;
     private Telemetry telemetry;
@@ -24,6 +24,8 @@ public class Drive {
     private DcMotor rightFrontDrive = null;
     private DcMotor leftBackDrive = null;
     private DcMotor rightBackDrive = null;
+    private DcMotorEx arm1 = null;
+    private DcMotorEx arm2 = null;
     public BNO055IMU imu = null;
     private double multiplier = 1;
 
@@ -37,6 +39,8 @@ public class Drive {
         rightFrontDrive = map.get(DcMotor.class, "Motor1");
         leftBackDrive = map.get(DcMotor.class, "Motor2");
         rightBackDrive = map.get(DcMotor.class, "Motor3");
+        arm1 = map.get(DcMotorEx.class, "Arm1");
+        arm2 = map.get(DcMotorEx.class, "Arm2");
 
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -110,6 +114,13 @@ public class Drive {
         return rightBackDrive;
     }
 
+    public DcMotorEx getArm1() {
+        return arm1;
+    }
+
+    public DcMotorEx getArm2() {
+        return arm2;
+    }
 
     public double getMultiplier() {
         return multiplier;
