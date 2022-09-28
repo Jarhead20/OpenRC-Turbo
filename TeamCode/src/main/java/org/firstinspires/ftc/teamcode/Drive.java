@@ -10,37 +10,37 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.usb.UsbSerialNumber;
 
 import java.text.DecimalFormat;
+import java.util.concurrent.TimeUnit;
 
 public class Drive {
+
+
     private HardwareMap map;
     private Telemetry telemetry;
     private DcMotor leftFrontDrive = null;
     private DcMotor rightFrontDrive = null;
     private DcMotor leftBackDrive = null;
     private DcMotor rightBackDrive = null;
-    private DcMotorEx arm1 = null;
-    private DcMotorEx arm2 = null;
+
+
     public BNO055IMU imu = null;
     private double multiplier = 1;
 
     public Drive(HardwareMap map, Telemetry telemetry) {
         this.map = map;
         this.telemetry = telemetry;
-    }
 
-    public void setup() {
-        leftFrontDrive = map.get(DcMotor.class, "Motor0");
-        rightFrontDrive = map.get(DcMotor.class, "Motor1");
-        leftBackDrive = map.get(DcMotor.class, "Motor2");
-        rightBackDrive = map.get(DcMotor.class, "Motor3");
-        arm1 = map.get(DcMotorEx.class, "Arm1");
-        arm2 = map.get(DcMotorEx.class, "Arm2");
+        leftFrontDrive = map.get(DcMotor.class, "motor0");
+        rightFrontDrive = map.get(DcMotor.class, "motor1");
+        leftBackDrive = map.get(DcMotor.class, "motor2");
+        rightBackDrive = map.get(DcMotor.class, "motor3");
 
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -63,7 +63,9 @@ public class Drive {
         imu.initialize(parameters);
 
         telemetry.addData("Status", "Setup");
+
     }
+
 
     public void mecanum(Gamepad gamepad) {
 
@@ -76,18 +78,6 @@ public class Drive {
         v[1] = r * Math.sin(robotAngle) - rightX;
         v[2] = r * Math.sin(robotAngle) + rightX;
         v[3] = r * Math.cos(robotAngle) - rightX;
-//        double max = 0;
-//        for (int i = 0; i < 4; i++) {
-//            if (Math.abs(v[i]) > max) max = Math.abs(v[i]);
-//        }
-//        max = Range.clip(max, -1, 1);
-//        DecimalFormat df = new DecimalFormat("0.00");
-//        telemetry.addData("Status", "max: " + max);
-//        for (int i = 0; i < 4; i++) {
-//            double e = v[i] / max;
-//            telemetry.addData("Status", df.format(e) + " " + df.format(v[i]) + " " + df.format(max));
-//            v[i] = e;
-//        }
         telemetry.addData("0", v[0]);
         telemetry.addData("1", v[1]);
         telemetry.addData("2", v[2]);
@@ -98,35 +88,9 @@ public class Drive {
         rightBackDrive.setPower(v[3]);
     }
 
-    public DcMotor getLeftFrontDrive() {
-        return leftFrontDrive;
-    }
-
-    public DcMotor getRightFrontDrive() {
-        return rightFrontDrive;
-    }
-
-    public DcMotor getLeftBackDrive() {
-        return leftBackDrive;
-    }
-
-    public DcMotor getRightBackDrive() {
-        return rightBackDrive;
-    }
-
-    public DcMotorEx getArm1() {
-        return arm1;
-    }
-
-    public DcMotorEx getArm2() {
-        return arm2;
-    }
-
-    public double getMultiplier() {
-        return multiplier;
-    }
-
     public void setMultiplier(double multiplier) {
         this.multiplier = multiplier;
     }
+
+
 }
