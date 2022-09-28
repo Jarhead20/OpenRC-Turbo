@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.internal.usb.UsbSerialNumber;
 
 import java.text.DecimalFormat;
@@ -61,6 +62,13 @@ public class Drive {
 
         imu = map.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
+
+        // resetting arm2 encoder
+        do {
+            arm2.setVelocity(-5);
+        } while (arm2.getCurrent(CurrentUnit.AMPS) < 2.5);
+        arm2.setVelocity(0);
+        arm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         telemetry.addData("Status", "Setup");
     }
@@ -128,5 +136,25 @@ public class Drive {
 
     public void setMultiplier(double multiplier) {
         this.multiplier = multiplier;
+    }
+
+    public double[] armIk(double x, double y, boolean drive) {
+        double link = 0.4; // link length
+        double link2 = 0.4;
+        double[] angles = new double[2];
+
+        // idk why this works but jared's code doesn't, and i cant be bothered to find out why
+        // so ill just leave it
+        double thing = Math.acos((x * x + y * y - link * link - link2 * link2) / (2 * link * link2));
+        angles[0] = (Math.atan(y / x) + Math.atan((link2 * Math.sin(thing)) / (link + link2 * Math.cos(thing))));
+        angles[1] = -thing;
+
+        if (drive) {
+            // dividing by 8 and (int) converts to ticks
+            // multiplying converts them to angles
+            getArm1().setTargetPosition((int) (Math.toDegrees(angles[0]) / 8));
+            getArm2().setTargetPosition((int) (Math.toDegrees(angles[1]) / 8));
+        }
+        return angles;
     }
 }

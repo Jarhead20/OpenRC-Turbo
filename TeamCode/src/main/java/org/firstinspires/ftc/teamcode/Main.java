@@ -37,29 +37,28 @@ public class Main extends OpMode
 
     public enum ArmState {
         START,
+        MOVE_MIDDLE, // when the desiredX is on the opposite side to currentX, moves to (0, 0.4) then desired
         MOVE,
         GRIPPER,
         RETURN
     }
     ArmState armState = ArmState.START;
     boolean collect; // set in START, whether arm will connect an object
-    double desiredX; // bad
+    double desiredX;
     double desiredY;
 
     @Override
     public void init() {
         telemetry.addData("Status", "Initialized");
-//        arm = hardwareMap.get(DcMotorEx.class, "arm");
+//        arm1 = hardwareMap.get(DcMotorEx.class, "arm1");
 //        arm2 = hardwareMap.get(DcMotorEx.class, "arm2");
         drive = new Drive(hardwareMap,telemetry);
         drive.setup();
-//        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        arm1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        arm2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        arm.setTargetPosition(0);
-//        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-//        calibrate motors here
+//        arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        arm1.setTargetPosition(0);
+//        arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     @Override
@@ -74,8 +73,8 @@ public class Main extends OpMode
 
     @Override
     public void loop() {
-        /*switch (armState) {
-            case armState.START:
+        switch (armState) {
+            case START:
                 // Waiting for some input
                 // just dpad button is open, rBumper is closed
                 // closed is left, open is right
@@ -88,7 +87,7 @@ public class Main extends OpMode
                     }
                     desiredY = 0.15;
                     collect = true;
-                    armState = armState.MOVE;
+                    armState = ArmState.MOVE;
                 } else if (gamepad1.dpad_up) {
                     if (gamepad1.right_bumper) {
                         desiredX = -0.4;
@@ -96,7 +95,7 @@ public class Main extends OpMode
                         desiredX = 0.4;
                     }
                     desiredY = 0.7;
-                    armState = armState.MOVE;
+                    armState = ArmState.MOVE;
                 } else if (gamepad1.dpad_right) {
                     if (gamepad1.right_bumper) {
                         desiredX = -0.4;
@@ -104,7 +103,7 @@ public class Main extends OpMode
                         desiredX = 0.4;
                     }
                     desiredY = 0.5;
-                    armState = armState.MOVE;
+                    armState = ArmState.MOVE;
                 } else if (gamepad1.dpad_down) {
                     if (gamepad1.right_bumper) {
                         desiredX = -0.4;
@@ -112,60 +111,83 @@ public class Main extends OpMode
                         desiredX = 0.4;
                     }
                     desiredY = 0.3;
-                    armState = armState.MOVE;
+                    armState = ArmState.MOVE;
                 }
-            if (!Double.isNaN(desiredX) && !Double.isNaN(desiredY)) {
-                ArmKinematics(desiredX, desiredY);
-                if (collect) { open gripper; }
-                 pitch and yaw
-            }
-            break;
+                if (!Double.isNaN(desiredX) && !Double.isNaN(desiredY)) {
+                    if ((drive.getArm1().getCurrentPosition() * 8 - 90) * (drive.getArm1().getCurrentPosition() * 8 - 90) < 0) {
+                        // if desired and current on opposite sides
+                        drive.armIk(0, 0.4, true);
+                        armState = armState.MOVE_MIDDLE;
+                    } else {
+                        drive.armIk(desiredX, desiredY, true);
+                        if (collect) {
+//                            open gripper;
+                        }
+                    }
+                }
+                break;
 
-            case armState.MOVE:
-                if (currentX != desiredX || currentY != desiredY) {
-                    break // change to if it has recorded correct number of ticks
-                    pitch and yaw
+            case MOVE_MIDDLE:
+                if (drive.getArm1().getCurrentPosition() != drive.getArm1().getTargetPosition()) {
+                    break;
+                    roll
+                } else if (drive.getArm2().getCurrentPosition() != drive.getArm2().getTargetPosition()) {
+                    break;
+                }
+                drive.armIk(desiredX, desiredY, true);
+                if (collect) {
+                    open gripper;
+                }
+                armState = ArmState.MOVE;
+                break;
+
+            case MOVE:
+                if (drive.getArm1().getCurrentPosition() != drive.getArm1().getTargetPosition()) {
+                    break;
+                    roll
+                } else if (drive.getArm2().getCurrentPosition() != drive.getArm2().getTargetPosition()) {
+                    break;
                 }
                 if (collect) {
                     close gripper
                 } else {
                     open gripper
                 }
-                armState = armState.GRIPPER;
+                armState = ArmState.GRIPPER;
                 currentTime = runtime.now(TimeUnit.MILLISECONDS);
                 break;
 
-            case armState.GRIPPER:
-                if (runtime.now(TimeUnit.MILLISECONDS) == currentTime + 800) {
-//                    ArmKinematics(0, 0);
-                    armState = armState.RETURN;
+            case GRIPPER:
+                if (runtime.now(TimeUnit.MILLISECONDS) == currentTime + 200) {
+                    drive.armIk(desiredX, desiredY, true);
+                    armState = ArmState.RETURN;
                 }
                 break;
 
-            case armState.RETURN:
-                if (currentX == 0 && currentY == 0) {
-             angle not position
-                    armState = armState.START;
+            case RETURN:
+                if (drive.getArm1().getCurrentPosition() != drive.getArm1().getTargetPosition()) {
+                    break;
                 }
-                break;
+                if (drive.getArm2().getCurrentPosition() != drive.getArm2().getTargetPosition()) {
+                    break;
+                }
+                armState = ArmState.START;
             default:
                 // should never be reached, as armState should never be null
-                armState = armState.START;
-        }*/
+                armState = ArmState.START;
+        }
 
-//        telemetry.addData("arm current", arm.getCurrent(CurrentUnit.AMPS));
-//        telemetry.addData("arm2 current", arm2.getCurrent(CurrentUnit.AMPS));
         if(!drive.imu.isGyroCalibrated()) return;
         total += gamepad2.left_stick_y*2;
         total2 += gamepad1.right_stick_y*2;
 
-//        arm.setPower(gamepad2.left_stick_y);
+//        arm1.setPower(gamepad2.left_stick_y);
 //        arm2.setPower(gamepad2.right_stick_y);
 
         drive.setMultiplier(0.5);
         if (gamepad1.right_bumper)
             drive.setMultiplier(1);
-//        telemetry.addData(arm.getTargetPosition() + " ",arm.getCurrentPosition());
+//        telemetry.addData(arm1.getTargetPosition() + " ",arm1.getCurrentPosition());
 //        telemetry.addData(arm2.getTargetPosition() + " ",arm2.getCurrentPosition());
         drive.mecanum(gamepad1);
     }
@@ -173,20 +195,4 @@ public class Main extends OpMode
     @Override
     public void stop() {}
 
-//    public static double[] move(double x, double y, double currentX) {
-//        double[] arr = new double[2];
-//        if (x * currentX > 0 || x == currentX) {
-//            arr[2], arr[3] = getAngles(x, y);
-//        } else {
-//            double[] arr = getAngles(0, 0.2);
-//            double[] arr2 = getAngles(x, y);
-//        }
-//    }
-
-    public static double ticksToAngles(double ticks) {
-        return ticks / 8;
-    }
-    public static double anglesToTicks(double angles) {
-        return angles * 8;
-    }
 }
