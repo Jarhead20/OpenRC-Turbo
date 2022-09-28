@@ -3,12 +3,14 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 public class Arm {
     private final double LINK1 = 0.465;
@@ -32,6 +34,12 @@ public class Arm {
         arm2 = map.get(DcMotorEx.class, "arm2");
         pot = map.get(AnalogInput.class, "pot");
         gripper = map.get(Servo.class, "gripper");
+
+        do {
+            arm2.setVelocity(-5);
+        } while (arm2.getCurrent(CurrentUnit.AMPS) < 2.5);
+        arm2.setVelocity(0);
+        arm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     public void move(Gamepad gamepad){
@@ -86,12 +94,15 @@ public class Arm {
 
         double e1 = Math.atan(link2 * Math.sin(angles[1]) / (link + link2 * Math.cos(angles[1])));
 
+        // code so that its /￣ by default by _/ if angle is
         if (x > 0) {
             angles[0] -= e1;
         } else {
-            angles[1] *= -1;
+            angles[1] = -angles[1];
             angles[0] += e1;
         }
+        angles[0] = Math.toDegrees(angles[0]) + 90;
+        angles[1] = Math.toDegrees(angles[1]) + 90;
         return angles;
     }
 
