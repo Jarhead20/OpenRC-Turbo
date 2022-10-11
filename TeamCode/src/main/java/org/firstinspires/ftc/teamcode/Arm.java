@@ -18,15 +18,19 @@ public class Arm {
     private final double voltageTolerance = 0.1;
     private final double encoderTolerance = 10;
 
-
     private DcMotorEx arm1;
     private DcMotorEx arm2;
     private Servo gripper;
+    private Servo pitch;
+    private Servo roll;
     private AnalogInput pot;
     private double[] angles = {0,0};
     private double armX = 0;
     private double armY = 0;
     PIDFController armPID = new PIDFController(new PIDCoefficients(6,0.01,3));
+    double arm1Offset = 50; // angle between maxEncoder position and ground
+    int maxEncoder1;
+    int maxEncoder2;
 
     public Arm (HardwareMap map, Telemetry telemetry){
 
@@ -34,12 +38,30 @@ public class Arm {
         arm2 = map.get(DcMotorEx.class, "arm2");
         pot = map.get(AnalogInput.class, "pot");
         gripper = map.get(Servo.class, "gripper");
+        pitch = map.get(Servo.class, "pitch");
+        roll = map.get(Servo.class, "roll");
+
+        do {
+            arm1.setVelocity(-5);
+        } while (arm1.getCurrent(CurrentUnit.AMPS) < 2.5);
+        arm1.setVelocity(0);
+        arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        do {
+            arm1.setVelocity(5);
+        } while (arm1.getCurrent(CurrentUnit.AMPS) < 2.5);
+        arm1.setVelocity(0);
+        maxEncoder1 = arm1.getCurrentPosition();
 
         do {
             arm2.setVelocity(-5);
         } while (arm2.getCurrent(CurrentUnit.AMPS) < 2.5);
         arm2.setVelocity(0);
         arm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        do {
+            arm2.setVelocity(5);
+        } while (arm2.getCurrent(CurrentUnit.AMPS) < 2.5);
+        arm2.setVelocity(0);
+        maxEncoder2 = arm2.getCurrentPosition();
     }
 
     public void move(Gamepad gamepad){
@@ -64,12 +86,21 @@ public class Arm {
         if(gamepad.right_bumper) armX *= -1;
         move(armX, armY);
 
-        //pitch and yaw
+        if (gamepad.left_bumper) {
+            // assuming 1 is FORWARD, 0 is BACKWARD
+            if (gripper.getDirection() == Servo.Direction.FORWARD) {
+                gripper.setDirection(Servo.Direction.REVERSE);
+            } else {
+                gripper.setDirection(Servo.Direction.FORWARD);
+            }
+        }
     }
 
-    public void move(double x, double y){
-        angles = getAngles(armX, armY);
-        arm2.setTargetPosition(angleToTicks(angles[1]));
+    public void move(double x, double y) {
+        angles = getAngles(x, y);
+        arm1.setTargetPosition((int) angles[0]);
+        arm2.setTargetPosition((int) angles[1]);
+        pitch.setPosition(angles[3]);
         armPID.setTargetPosition(angleToVoltage(angles[0]));
     }
 
@@ -78,31 +109,60 @@ public class Arm {
     }
 
     public boolean atTarget(){
-        double[] angles = getAngles(armX, armY);
+        double[] angles = getAngles(armX, armY); // technically is now ticks not angles
         double pV = pot.getVoltage();
         double tV = angleToVoltage(angles[0]);
-        //the 2 numbers are the target tolerances
+        // the 2 numbers are the target tolerances
         return (Math.abs(pV-tV) < voltageTolerance && Math.abs(arm2.getCurrentPosition() - arm1.getTargetPosition()) < encoderTolerance);
     }
 
     public double[] getAngles(double x, double y) {
-        double link = LINK1; // link length
-        double link2 = LINK2;
-        double v = Math.pow(x, 2) + Math.pow(y, 2);
-        double[] angles = {Math.atan(y / x),
-                Math.acos((v - (link*link) - (link2*link2)) / (2 * link * link2))};
-
-        double e1 = Math.atan(link2 * Math.sin(angles[1]) / (link + link2 * Math.cos(angles[1])));
-
-        // code so that its /￣ by default by _/ if angle is
-        if (x > 0) {
-            angles[0] -= e1;
+        double maxPitch = 270;
+        double maxRoll = 270;
+        double[] angles = new double[4];
+        if (x == 0) {
+            if (arm1.getCurrentPosition() < maxEncoder1 / 2) {
+                // doesn't really account for x == 0
+                angles[0] = 0;
+                angles[1] = maxEncoder2;
+            } else {
+                angles[0] = maxEncoder1;
+                angles[1] = 0;
+            }
         } else {
-            angles[1] = -angles[1];
-            angles[0] += e1;
+            angles[0] = Math.acos((x*x + y*y - LINK1*LINK1 - LINK2*LINK2)/(2*LINK1*LINK2));
+            angles[1] = Math.acos((Math.pow(x, 2) + Math.pow(y, 2) - (LINK1 * LINK1) - (LINK2 * LINK2)) / (2 * LINK1 * LINK2));
+            angles[2] = maxPitch / 2;
+            angles[3] = maxRoll / 2;
+
+            angles[0] = Math.atan((LINK2*Math.sin(angles[1]))/(LINK1 + LINK2*Math.cos(angles[1]))) - Math.atan(y/x);
+
+            angleToTicks(Math.toDegrees(angles[0]));
+            angleToTicks(Math.toDegrees(angles[1]));
+            if (x > 0) {
+                angles[0] = (int) (maxEncoder1 - angles[0] + arm1Offset);
+                angles[1] = (int) (maxEncoder2 / 2 + angles[1]);
+            } else if (x < 0) {
+                angles[0] = (int) (angles[0] - arm1Offset);
+                angles[1] = (int) (maxEncoder2 - angles[1]);
+            }
         }
-        angles[0] = Math.toDegrees(angles[0]) + 90;
-        angles[1] = Math.toDegrees(angles[1]) + 90;
+        if ((angles[1] - maxEncoder2 / 2 + 180 - angles[0] - arm1Offset) < 90) {
+            angles[2] = 180 - angles[0] - arm1Offset - angles[1]  + maxEncoder1 / 2;
+        } else if ((angles[1] - maxEncoder2 / 2 + 180 - angles[0] - arm1Offset) > 90) {
+            angles[2] = angles[0] + angles[1] + arm1Offset - 180 - maxEncoder2 / 2;
+        } else {
+            angles[2] = 0;
+        }
+        angles[2] /= maxPitch; // to convert to servo motor value
+        if ((arm1.getCurrentPosition() > maxEncoder1 / 2) && (x < 0)) {
+            // going right to left
+            angles[3] -= 180;
+        } else if ((arm1.getCurrentPosition() < maxEncoder1 / 2) && (x > 0)) {
+            // left to right
+            angles[3] += 180;
+        }
+        angles[3] /= maxRoll;
         return angles;
     }
 
