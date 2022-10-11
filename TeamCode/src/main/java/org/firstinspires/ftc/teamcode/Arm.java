@@ -101,6 +101,7 @@ public class Arm {
         arm1.setTargetPosition((int) angles[0]);
         arm2.setTargetPosition((int) angles[1]);
         pitch.setPosition(angles[3]);
+        // no roll
         armPID.setTargetPosition(angleToVoltage(angles[0]));
     }
 
@@ -162,7 +163,7 @@ public class Arm {
             // left to right
             angles[3] += 180;
         }
-        angles[3] /= maxRoll;
+//        angles[3] /= maxRoll;
         return angles;
     }
 
