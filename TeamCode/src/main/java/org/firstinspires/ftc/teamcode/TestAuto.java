@@ -72,7 +72,7 @@ public class TestAuto extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         drive = new SampleMecanumDrive(hardwareMap);
         d = new Drive(hardwareMap, telemetry);
-        d.setup();
+//        d.setup();
 
         startPose = new Pose2d(-60, -60, Math.toRadians(180));
 //        startPose = new Pose2d(-60, -60, Math.toRadians(90));

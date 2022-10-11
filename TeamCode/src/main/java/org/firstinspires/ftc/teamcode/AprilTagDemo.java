@@ -100,13 +100,13 @@ public class AprilTagDemo extends LinearOpMode
                     {
                         switch(detection.id){
                             case 10:
-                                System.out.println(1);
+                                telemetry.addData("1", "");
                                 break;
                             case 11:
-                                System.out.println(2);
+                                telemetry.addData("2", "");
                                 break;
                             case 21:
-                                System.out.println(3);
+                                telemetry.addData("3", "");
                                 break;
                         }
                     }
