@@ -25,8 +25,6 @@ public class Drive {
     private DcMotor rightFrontDrive = null;
     private DcMotor leftBackDrive = null;
     private DcMotor rightBackDrive = null;
-    private DcMotorEx arm1 = null;
-    private DcMotorEx arm2 = null;
     public BNO055IMU imu = null;
     private double multiplier = 1;
 
@@ -40,8 +38,6 @@ public class Drive {
         rightFrontDrive = map.get(DcMotor.class, "Motor1");
         leftBackDrive = map.get(DcMotor.class, "Motor2");
         rightBackDrive = map.get(DcMotor.class, "Motor3");
-        arm1 = map.get(DcMotorEx.class, "Arm1");
-        arm2 = map.get(DcMotorEx.class, "Arm2");
 
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -62,13 +58,6 @@ public class Drive {
 
         imu = map.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-
-        // resetting arm2 encoder
-        do {
-            arm2.setVelocity(-5);
-        } while (arm2.getCurrent(CurrentUnit.AMPS) < 2.5);
-        arm2.setVelocity(0);
-        arm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         telemetry.addData("Status", "Setup");
     }
@@ -120,14 +109,6 @@ public class Drive {
 
     public DcMotor getRightBackDrive() {
         return rightBackDrive;
-    }
-
-    public DcMotorEx getArm1() {
-        return arm1;
-    }
-
-    public DcMotorEx getArm2() {
-        return arm2;
     }
 
     public double getMultiplier() {
