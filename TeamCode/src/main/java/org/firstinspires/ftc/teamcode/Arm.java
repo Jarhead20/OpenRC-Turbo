@@ -121,9 +121,11 @@ public class Arm {
         double maxPitch = 270;
         double maxRoll = 270;
         double[] angles = new double[4];
+        // when x is 0 trig works differently
         if (x == 0) {
+            // for now shouldn't ever be 0
             if (arm1.getCurrentPosition() < maxEncoder1 / 2) {
-                // doesn't really account for x == 0
+                // doesn't really account for currentX == 0
                 angles[0] = 0;
                 angles[1] = maxEncoder2;
             } else {
@@ -131,15 +133,18 @@ public class Arm {
                 angles[1] = 0;
             }
         } else {
-            angles[0] = Math.acos((x*x + y*y - LINK1*LINK1 - LINK2*LINK2)/(2*LINK1*LINK2));
+            // basic ik for /￣ form of the two arms
             angles[1] = Math.acos((Math.pow(x, 2) + Math.pow(y, 2) - (LINK1 * LINK1) - (LINK2 * LINK2)) / (2 * LINK1 * LINK2));
+            angles[0] = Math.atan((LINK2*Math.sin(angles[1]))/(LINK1 + LINK2*Math.cos(angles[1]))) - Math.atan(y/x);
             angles[2] = maxPitch / 2;
             angles[3] = maxRoll / 2;
 
-            angles[0] = Math.atan((LINK2*Math.sin(angles[1]))/(LINK1 + LINK2*Math.cos(angles[1]))) - Math.atan(y/x);
+            Math.toDegrees(angles[0]);
+            Math.toDegrees(angles[1]);
 
-            angleToTicks(Math.toDegrees(angles[0]));
-            angleToTicks(Math.toDegrees(angles[1]));
+            // angle[0] is measured from the ground on right side
+            // angle[1] is measured from extension of link1
+            // makes angles make sense compared to encoders
             if (x > 0) {
                 angles[0] = (int) (maxEncoder1 - angles[0] + arm1Offset);
                 angles[1] = (int) (maxEncoder2 / 2 + angles[1]);
@@ -148,14 +153,30 @@ public class Arm {
                 angles[1] = (int) (maxEncoder2 - angles[1]);
             }
         }
-        if ((angles[1] - maxEncoder2 / 2 + 180 - angles[0] - arm1Offset) < 90) {
+
+        // pitch
+        if ((180 - angles[0] - arm1Offset - angles[1] + maxEncoder2/2) > 0) { // if link2 points upwards
             angles[2] = 180 - angles[0] - arm1Offset - angles[1]  + maxEncoder1 / 2;
-        } else if ((angles[1] - maxEncoder2 / 2 + 180 - angles[0] - arm1Offset) > 90) {
+        } else if ((180 - angles[0] - arm1Offset - angles[1] + maxEncoder2/2) < 0) {
             angles[2] = angles[0] + angles[1] + arm1Offset - 180 - maxEncoder2 / 2;
-        } else {
-            angles[2] = 0;
         }
         angles[2] /= maxPitch; // to convert to servo motor value
+        if (arm1.getCurrentPosition() > maxEncoder1 / 2) {
+//            inverts pitch if on right side (since roll turns it upside down)
+            angles[2] = 1 - angles[2];
+        }
+
+        // roll
+        // assuming that view from left side is:
+        /*
+        bigger encoder value
+              ___
+             /   \
+            |
+            \___/
+        smaller encoder value
+        rotates anti-clockwise when moving to right side
+         */
         if ((arm1.getCurrentPosition() > maxEncoder1 / 2) && (x < 0)) {
             // going right to left
             angles[3] -= 180;
@@ -163,7 +184,9 @@ public class Arm {
             // left to right
             angles[3] += 180;
         }
-//        angles[3] /= maxRoll;
+
+        angles[0] = angleToTicks(angles[0]);
+        angles[1] = angleToTicks(angles[1]);
         return angles;
     }
 
