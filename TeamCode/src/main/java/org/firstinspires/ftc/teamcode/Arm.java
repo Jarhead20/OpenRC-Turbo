@@ -33,7 +33,6 @@ public class Arm {
     int maxEncoder2;
 
     public Arm (HardwareMap map, Telemetry telemetry){
-
         arm1 = map.get(DcMotorEx.class, "arm1");
         arm2 = map.get(DcMotorEx.class, "arm2");
         pot = map.get(AnalogInput.class, "pot");
