@@ -7,7 +7,6 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -82,7 +81,6 @@ public class TestAuto extends OpMode {
         telemetry.addData("Realtime analysis", TSEPos);
 //        Pose2d test = new Pose2d(-53.2,41.6, Math.toRadians(-79)), Math.toRadians(-79);
         deposit = drive.trajectoryBuilder(startPose, true)
-
                 .splineTo(new Vector2d(-10, -40), Math.toRadians(90))
                 .addDisplacementMarker(() -> state = State.EXTEND)
                 .build();
@@ -99,6 +97,32 @@ public class TestAuto extends OpMode {
                 .strafeLeft(4)
                 .back(100)
                 //.splineToConstantHeading(new Vector2d(55, -65), Math.toRadians(180))
+                .build();
+
+        // [object][num][Alliance side relative to field][Alliance]
+        Trajectory signalOneLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -60.33, Math.toRadians(90.00)))
+                .splineTo(new Vector2d(-55.00, -56.67), Math.toRadians(169.26))
+                .splineTo(new Vector2d(-62.00, -35.83), Math.toRadians(94.24))
+                .build();
+        Trajectory signalTwoLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -62.00, Math.toRadians(90.00)))
+                .splineTo(new Vector2d(-51.17, -54.00), Math.toRadians(152.70))
+                .splineTo(new Vector2d(-58.83, -26.83), Math.toRadians(105.76))
+                .splineTo(new Vector2d(-59.00, -15.33), Math.toRadians(90.83))
+                .splineTo(new Vector2d(-36.83, -10.83), Math.toRadians(11.48))
+                .build();
+        Trajectory signalThreeLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -60.83, Math.toRadians(90.00)))
+                .splineTo(new Vector2d(-16.33, -61.50), Math.toRadians(-1.97))
+                .splineTo(new Vector2d(-12.67, -36.33), Math.toRadians(81.05))
+                .build();
+        Trajectory signalTwoLeftBlue = drive.trajectoryBuilder(new Pose2d(-35.67, 62.00, Math.toRadians(270.00)))
+                .splineTo(new Vector2d(-51.17, 54.00), Math.toRadians(207.30))
+                .splineTo(new Vector2d(-58.83, 26.83), Math.toRadians(254.24))
+                .splineTo(new Vector2d(-59.00, 15.33), Math.toRadians(269.17))
+                .splineTo(new Vector2d(-36.83, 10.83), Math.toRadians(348.52))
+                .build();
+        Trajectory signalThreeLeftBlue = drive.trajectoryBuilder(new Pose2d(-35.67, 60.33, Math.toRadians(270.00)))
+                .splineTo(new Vector2d(-55.00, 56.67), Math.toRadians(190.74))
+                .splineTo(new Vector2d(-62.00, 35.83), Math.toRadians(265.76))
                 .build();
     }
 
@@ -223,7 +247,5 @@ public class TestAuto extends OpMode {
             @Override
             public void onError(int errorCode) {}
         });
-
-
     }
 }
