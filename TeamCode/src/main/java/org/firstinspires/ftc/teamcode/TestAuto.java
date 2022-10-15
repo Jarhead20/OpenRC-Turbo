@@ -7,7 +7,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -21,7 +21,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import java.util.ArrayList;
 @Config
 @Autonomous(group = "drive")
-public class TestAuto extends LinearOpMode {
+public class TestAuto extends OpMode {
 
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
@@ -60,67 +60,28 @@ public class TestAuto extends LinearOpMode {
         RETRACT
     }
 
-
     public Pose2d startPose;
 
     State state = State.START;
     ElapsedTime timer = new ElapsedTime();
 
     @Override
-    public void runOpMode(){
+    public void init() {
         timer.reset();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         drive = new SampleMecanumDrive(hardwareMap);
         d = new Drive(hardwareMap, telemetry);
-//        d.setup();
+        d.setup();
 
         startPose = new Pose2d(-60, -60, Math.toRadians(180));
 //        startPose = new Pose2d(-60, -60, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
         doCV();
-        while(!isStarted() && !isStarted()){
-            ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
-
-            if (detections != null) {
-                telemetry.addData("FPS", camera.getFps());
-                telemetry.addData("Overhead ms", camera.getOverheadTimeMs());
-                telemetry.addData("Pipeline ms", camera.getPipelineTimeMs());
-
-                if (detections.size() == 0) {
-                    numFramesWithoutDetection++;
-                    if (numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION){
-                        aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
-                        TSEPos = 3;
-                    }
-                } else {
-                    numFramesWithoutDetection = 0;
-                    if (detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
-                    if (detections.size() > 0) {
-
-
-                        AprilTagDetection detection = detections.get(0);
-
-                        if (detection.pose.x < 0) TSEPos = 1;
-                        else if (detection.pose.x >= 0) TSEPos = 2;
-                        telemetry.addData("test",detection.pose.x);
-                    }
-                }
-            }
-            telemetry.addData("TSE", TSEPos);
-            telemetry.update();
-        }
-
-        waitForStart();
-
-
 
         telemetry.addData("Realtime analysis", TSEPos);
 //        Pose2d test = new Pose2d(-53.2,41.6, Math.toRadians(-79)), Math.toRadians(-79);
         deposit = drive.trajectoryBuilder(startPose, true)
-
-
-
-                .splineTo(new Vector2d(-10,-40),Math.toRadians(90))
+                .splineTo(new Vector2d(-10, -40), Math.toRadians(90))
                 .addDisplacementMarker(() -> state = State.EXTEND)
                 .build();
 
@@ -138,15 +99,66 @@ public class TestAuto extends LinearOpMode {
                 //.splineToConstantHeading(new Vector2d(55, -65), Math.toRadians(180))
                 .build();
 
+        // [object][num][Alliance side relative to field][Alliance]
+        Trajectory signalOneLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -60.33, Math.toRadians(90.00)))
+                .splineTo(new Vector2d(-55.00, -56.67), Math.toRadians(169.26))
+                .splineTo(new Vector2d(-62.00, -35.83), Math.toRadians(94.24))
+                .build();
+        Trajectory signalTwoLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -62.00, Math.toRadians(90.00)))
+                .splineTo(new Vector2d(-51.17, -54.00), Math.toRadians(152.70))
+                .splineTo(new Vector2d(-58.83, -26.83), Math.toRadians(105.76))
+                .splineTo(new Vector2d(-59.00, -15.33), Math.toRadians(90.83))
+                .splineTo(new Vector2d(-36.83, -10.83), Math.toRadians(11.48))
+                .build();
+        Trajectory signalThreeLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -60.83, Math.toRadians(90.00)))
+                .splineTo(new Vector2d(-16.33, -61.50), Math.toRadians(-1.97))
+                .splineTo(new Vector2d(-12.67, -36.33), Math.toRadians(81.05))
+                .build();
+        Trajectory signalTwoLeftBlue = drive.trajectoryBuilder(new Pose2d(-35.67, 62.00, Math.toRadians(270.00)))
+                .splineTo(new Vector2d(-51.17, 54.00), Math.toRadians(207.30))
+                .splineTo(new Vector2d(-58.83, 26.83), Math.toRadians(254.24))
+                .splineTo(new Vector2d(-59.00, 15.33), Math.toRadians(269.17))
+                .splineTo(new Vector2d(-36.83, 10.83), Math.toRadians(348.52))
+                .build();
+        Trajectory signalThreeLeftBlue = drive.trajectoryBuilder(new Pose2d(-35.67, 60.33, Math.toRadians(270.00)))
+                .splineTo(new Vector2d(-55.00, 56.67), Math.toRadians(190.74))
+                .splineTo(new Vector2d(-62.00, 35.83), Math.toRadians(265.76))
+                .build();
+    }
 
-        if(isStopRequested()) return;
+    @Override
+    public void loop() {
+        ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
+
+        if (detections != null) {
+            telemetry.addData("FPS", camera.getFps());
+            telemetry.addData("Overhead ms", camera.getOverheadTimeMs());
+            telemetry.addData("Pipeline ms", camera.getPipelineTimeMs());
+
+            if (detections.size() == 0) {
+                numFramesWithoutDetection++;
+                if (numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION){
+                    aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
+                    TSEPos = 3;
+                }
+            } else {
+                numFramesWithoutDetection = 0;
+                if (detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
+                if (detections.size() > 0) {
+
+                    AprilTagDetection detection = detections.get(0);
+
+                    if (detection.pose.x < 0) TSEPos = 1;
+                    else if (detection.pose.x >= 0) TSEPos = 2;
+                    telemetry.addData("test",detection.pose.x);
+                }
+            }
+        }
 
         drive.followTrajectorySequence(duck1);
         //drive.followTrajectory(deposit);
 
-
-        while(!isStopRequested()){
-            drive.update();
+    }
 
             //drive.followTrajectorySequence(duck1);
 
@@ -222,10 +234,6 @@ public class TestAuto extends LinearOpMode {
 
         //d.slide(d.position);
 
-        }
-
-    }
-
     public void doCV(){
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -239,7 +247,5 @@ public class TestAuto extends LinearOpMode {
             @Override
             public void onError(int errorCode) {}
         });
-
-
     }
 }
