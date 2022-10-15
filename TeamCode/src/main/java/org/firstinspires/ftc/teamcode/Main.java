@@ -37,18 +37,6 @@ public class Main extends OpMode
     simultaneously control the drive train
     */
 
-    public enum ArmState {
-        START,
-        MOVE_MIDDLE, // when the desiredX is on the opposite side to currentX, moves to (0, 0.4) then desired
-        MOVE,
-        GRIPPER,
-        RETURN
-    }
-    ArmState armState = ArmState.START;
-    boolean collect; // set in START, whether arm will connect an object
-    double desiredX;
-    double desiredY;
-
     @Override
     public void init() {
         telemetry.addData("Status", "Initialized");

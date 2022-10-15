@@ -138,9 +138,6 @@ public class Arm {
             angles[2] = maxPitch / 2;
             angles[3] = maxRoll / 2;
 
-            Math.toDegrees(angles[0]);
-            Math.toDegrees(angles[1]);
-
             // angle[0] is measured from the ground on right side
             // angle[1] is measured from extension of link1
             // makes angles make sense compared to encoders
@@ -184,8 +181,8 @@ public class Arm {
             angles[3] += 180;
         }
 
-        angles[0] = angleToTicks(angles[0]);
-        angles[1] = angleToTicks(angles[1]);
+        angles[0] = angleToTicks(Math.toDegrees(angles[0]));
+        angles[1] = angleToTicks(Math.toDegrees(angles[1]));
         return angles;
     }
 
