@@ -27,5 +27,4 @@ dependencies {
     implementation 'com.acmerobotics.roadrunner:core:0.5.3'
 
     implementation project(':FtcRobotController')
-    implementation project(path: ':Hardware')
 }
