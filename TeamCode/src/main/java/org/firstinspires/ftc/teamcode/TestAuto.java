@@ -101,8 +101,7 @@ public class TestAuto extends OpMode {
 
         // [object][num][Alliance side relative to field][Alliance]
         Trajectory signalOneLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -60.33, Math.toRadians(90.00)))
-                .splineTo(new Vector2d(-55.00, -56.67), Math.toRadians(169.26))
-                .splineTo(new Vector2d(-62.00, -35.83), Math.toRadians(94.24))
+                .splineTo(new Vector2d(-59.50, -37.25), Math.toRadians(135.92))
                 .build();
         Trajectory signalTwoLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -62.00, Math.toRadians(90.00)))
                 .splineTo(new Vector2d(-51.17, -54.00), Math.toRadians(152.70))
@@ -114,6 +113,24 @@ public class TestAuto extends OpMode {
                 .splineTo(new Vector2d(-16.33, -61.50), Math.toRadians(-1.97))
                 .splineTo(new Vector2d(-12.67, -36.33), Math.toRadians(81.05))
                 .build();
+
+        Trajectory signalOneRightRed = drive.trajectoryBuilder(new Pose2d(36.00, -60.50, Math.toRadians(90.00)))
+                .splineTo(new Vector2d(23.25, -60.25), Math.toRadians(178.88))
+                .splineTo(new Vector2d(12.50, -36.75), Math.toRadians(95.84))
+                .build();
+        Trajectory signalTwoRightRed = drive.trajectoryBuilder(new Pose2d(36.00, -60.25, Math.toRadians(90.00)))
+                .splineTo(new Vector2d(23.25, -60.25), Math.toRadians(180.00))
+                .splineTo(new Vector2d(10.25, -18.25), Math.toRadians(107.20))
+                .splineTo(new Vector2d(34.50, -13.00), Math.toRadians(12.22))
+                .build();
+        Trajectory signalThreeRightRed = drive.trajectoryBuilder(new Pose2d(36.00, -60.25, Math.toRadians(90.00)))
+                .splineTo(new Vector2d(59.25, -37.25), Math.toRadians(44.69))
+                .build();
+
+        Trajectory signalOneLeftBlue = drive.trajectoryBuilder(new Pose2d(-35.67, 60.83, Math.toRadians(270.00)))
+            .splineTo(new Vector2d(-16.33, 61.50), Math.toRadians(361.97))
+            .splineTo(new Vector2d(-12.67, 36.33), Math.toRadians(278.95))
+            .build();
         Trajectory signalTwoLeftBlue = drive.trajectoryBuilder(new Pose2d(-35.67, 62.00, Math.toRadians(270.00)))
                 .splineTo(new Vector2d(-51.17, 54.00), Math.toRadians(207.30))
                 .splineTo(new Vector2d(-58.83, 26.83), Math.toRadians(254.24))
@@ -121,8 +138,20 @@ public class TestAuto extends OpMode {
                 .splineTo(new Vector2d(-36.83, 10.83), Math.toRadians(348.52))
                 .build();
         Trajectory signalThreeLeftBlue = drive.trajectoryBuilder(new Pose2d(-35.67, 60.33, Math.toRadians(270.00)))
-                .splineTo(new Vector2d(-55.00, 56.67), Math.toRadians(190.74))
-                .splineTo(new Vector2d(-62.00, 35.83), Math.toRadians(265.76))
+                .splineTo(new Vector2d(-59.50, 37.25), Math.toRadians(224.08))
+                .build();
+
+        Trajectory signalOneRightBlue = drive.trajectoryBuilder(new Pose2d(36.00, 60.25, Math.toRadians(270.00)))
+                .splineTo(new Vector2d(57.50, 39.25), Math.toRadians(315.67))
+                .build();
+        Trajectory signalTwoRightBlue = drive.trajectoryBuilder(new Pose2d(36.00, 60.25, Math.toRadians(270.00)))
+                .splineTo(new Vector2d(23.25, 60.25), Math.toRadians(180.00))
+                .splineTo(new Vector2d(10.25, 18.25), Math.toRadians(252.80))
+                .splineTo(new Vector2d(34.50, 13.00), Math.toRadians(347.78))
+                .build();
+        Trajectory signalThreeRightBlue = drive.trajectoryBuilder(new Pose2d(36.00, 60.50, Math.toRadians(270.00)))
+                .splineTo(new Vector2d(23.25, 60.25), Math.toRadians(181.12))
+                .splineTo(new Vector2d(12.50, 36.75), Math.toRadians(264.16))
                 .build();
     }
 
