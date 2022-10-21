@@ -21,7 +21,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import java.util.ArrayList;
 @Config
 @Autonomous(group = "drive")
-public class TestAuto extends OpMode {
+public class AutoRedLeft extends OpMode {
 
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
@@ -50,19 +50,71 @@ public class TestAuto extends OpMode {
     public SampleMecanumDrive drive;
     public Drive d;
 
-    Trajectory deposit;
-    TrajectorySequence duck1;
-    Trajectory duck2;
+    TrajectorySequence duck1;// [object][num][Alliance side relative to field][Alliance]
+    //<editor-fold desc="Trajectories for going from starting position to signal zones">
+    Trajectory signalOneLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -60.33, Math.toRadians(90.00)))
+            .splineTo(new Vector2d(-59.50, -37.25), Math.toRadians(135.92))
+            .build();
+    Trajectory signalTwoLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -62.00, Math.toRadians(90.00)))
+            .splineTo(new Vector2d(-51.17, -54.00), Math.toRadians(152.70))
+            .splineTo(new Vector2d(-58.83, -26.83), Math.toRadians(105.76))
+            .splineTo(new Vector2d(-59.00, -15.33), Math.toRadians(90.83))
+            .splineTo(new Vector2d(-36.83, -10.83), Math.toRadians(11.48))
+            .build();
+    Trajectory signalThreeLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -60.83, Math.toRadians(90.00)))
+            .splineTo(new Vector2d(-16.33, -61.50), Math.toRadians(-1.97))
+            .splineTo(new Vector2d(-12.67, -36.33), Math.toRadians(81.05))
+            .build();
 
-    public enum State {
-        START,
-        EXTEND,
-        RETRACT
+    Trajectory signalOneRightRed = drive.trajectoryBuilder(new Pose2d(36.00, -60.50, Math.toRadians(90.00)))
+            .splineTo(new Vector2d(23.25, -60.25), Math.toRadians(178.88))
+            .splineTo(new Vector2d(12.50, -36.75), Math.toRadians(95.84))
+            .build();
+    Trajectory signalTwoRightRed = drive.trajectoryBuilder(new Pose2d(36.00, -60.25, Math.toRadians(90.00)))
+            .splineTo(new Vector2d(23.25, -60.25), Math.toRadians(180.00))
+            .splineTo(new Vector2d(10.25, -18.25), Math.toRadians(107.20))
+            .splineTo(new Vector2d(34.50, -13.00), Math.toRadians(12.22))
+            .build();
+    Trajectory signalThreeRightRed = drive.trajectoryBuilder(new Pose2d(36.00, -60.25, Math.toRadians(90.00)))
+            .splineTo(new Vector2d(59.25, -37.25), Math.toRadians(44.69))
+            .build();
+
+    Trajectory signalOneLeftBlue = drive.trajectoryBuilder(new Pose2d(-35.67, 60.83, Math.toRadians(270.00)))
+            .splineTo(new Vector2d(-16.33, 61.50), Math.toRadians(361.97))
+            .splineTo(new Vector2d(-12.67, 36.33), Math.toRadians(278.95))
+            .build();
+    Trajectory signalTwoLeftBlue = drive.trajectoryBuilder(new Pose2d(-35.67, 62.00, Math.toRadians(270.00)))
+            .splineTo(new Vector2d(-51.17, 54.00), Math.toRadians(207.30))
+            .splineTo(new Vector2d(-58.83, 26.83), Math.toRadians(254.24))
+            .splineTo(new Vector2d(-59.00, 15.33), Math.toRadians(269.17))
+            .splineTo(new Vector2d(-36.83, 10.83), Math.toRadians(348.52))
+            .build();
+    Trajectory signalThreeLeftBlue = drive.trajectoryBuilder(new Pose2d(-35.67, 60.33, Math.toRadians(270.00)))
+            .splineTo(new Vector2d(-59.50, 37.25), Math.toRadians(224.08))
+            .build();
+
+    Trajectory signalOneRightBlue = drive.trajectoryBuilder(new Pose2d(36.00, 60.25, Math.toRadians(270.00)))
+            .splineTo(new Vector2d(57.50, 39.25), Math.toRadians(315.67))
+            .build();
+    Trajectory signalTwoRightBlue = drive.trajectoryBuilder(new Pose2d(36.00, 60.25, Math.toRadians(270.00)))
+            .splineTo(new Vector2d(23.25, 60.25), Math.toRadians(180.00))
+            .splineTo(new Vector2d(10.25, 18.25), Math.toRadians(252.80))
+            .splineTo(new Vector2d(34.50, 13.00), Math.toRadians(347.78))
+            .build();
+    Trajectory signalThreeRightBlue = drive.trajectoryBuilder(new Pose2d(36.00, 60.50, Math.toRadians(270.00)))
+            .splineTo(new Vector2d(23.25, 60.25), Math.toRadians(181.12))
+            .splineTo(new Vector2d(12.50, 36.75), Math.toRadians(264.16))
+            .build();
+    //</editor-fold>
+
+    public enum AutoState {
+        PARK_CV,
+        PARK,
     }
+    AutoState autoState = AutoState.PARK;
 
     public Pose2d startPose;
 
-    State state = State.START;
     ElapsedTime timer = new ElapsedTime();
 
     @Override
@@ -79,109 +131,37 @@ public class TestAuto extends OpMode {
         doCV();
 
         telemetry.addData("Realtime analysis", TSEPos);
-//        Pose2d test = new Pose2d(-53.2,41.6, Math.toRadians(-79)), Math.toRadians(-79);
-        deposit = drive.trajectoryBuilder(startPose, true)
-                .splineTo(new Vector2d(-10, -40), Math.toRadians(90))
-                .addDisplacementMarker(() -> state = State.EXTEND)
-                .build();
-
-        duck1 = drive.trajectorySequenceBuilder(startPose)
-                .forward(10)
-                .strafeLeft(4)
-
-                //.splineTo(new Vector2d(-70, -60), Math.toRadians(180))
-                .addDisplacementMarker(() -> {
-                })
-
-                .back(10)
-                .strafeLeft(4)
-                .back(100)
-                //.splineToConstantHeading(new Vector2d(55, -65), Math.toRadians(180))
-                .build();
-
-        // [object][num][Alliance side relative to field][Alliance]
-        Trajectory signalOneLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -60.33, Math.toRadians(90.00)))
-                .splineTo(new Vector2d(-59.50, -37.25), Math.toRadians(135.92))
-                .build();
-        Trajectory signalTwoLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -62.00, Math.toRadians(90.00)))
-                .splineTo(new Vector2d(-51.17, -54.00), Math.toRadians(152.70))
-                .splineTo(new Vector2d(-58.83, -26.83), Math.toRadians(105.76))
-                .splineTo(new Vector2d(-59.00, -15.33), Math.toRadians(90.83))
-                .splineTo(new Vector2d(-36.83, -10.83), Math.toRadians(11.48))
-                .build();
-        Trajectory signalThreeLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -60.83, Math.toRadians(90.00)))
-                .splineTo(new Vector2d(-16.33, -61.50), Math.toRadians(-1.97))
-                .splineTo(new Vector2d(-12.67, -36.33), Math.toRadians(81.05))
-                .build();
-
-        Trajectory signalOneRightRed = drive.trajectoryBuilder(new Pose2d(36.00, -60.50, Math.toRadians(90.00)))
-                .splineTo(new Vector2d(23.25, -60.25), Math.toRadians(178.88))
-                .splineTo(new Vector2d(12.50, -36.75), Math.toRadians(95.84))
-                .build();
-        Trajectory signalTwoRightRed = drive.trajectoryBuilder(new Pose2d(36.00, -60.25, Math.toRadians(90.00)))
-                .splineTo(new Vector2d(23.25, -60.25), Math.toRadians(180.00))
-                .splineTo(new Vector2d(10.25, -18.25), Math.toRadians(107.20))
-                .splineTo(new Vector2d(34.50, -13.00), Math.toRadians(12.22))
-                .build();
-        Trajectory signalThreeRightRed = drive.trajectoryBuilder(new Pose2d(36.00, -60.25, Math.toRadians(90.00)))
-                .splineTo(new Vector2d(59.25, -37.25), Math.toRadians(44.69))
-                .build();
-
-        Trajectory signalOneLeftBlue = drive.trajectoryBuilder(new Pose2d(-35.67, 60.83, Math.toRadians(270.00)))
-            .splineTo(new Vector2d(-16.33, 61.50), Math.toRadians(361.97))
-            .splineTo(new Vector2d(-12.67, 36.33), Math.toRadians(278.95))
-            .build();
-        Trajectory signalTwoLeftBlue = drive.trajectoryBuilder(new Pose2d(-35.67, 62.00, Math.toRadians(270.00)))
-                .splineTo(new Vector2d(-51.17, 54.00), Math.toRadians(207.30))
-                .splineTo(new Vector2d(-58.83, 26.83), Math.toRadians(254.24))
-                .splineTo(new Vector2d(-59.00, 15.33), Math.toRadians(269.17))
-                .splineTo(new Vector2d(-36.83, 10.83), Math.toRadians(348.52))
-                .build();
-        Trajectory signalThreeLeftBlue = drive.trajectoryBuilder(new Pose2d(-35.67, 60.33, Math.toRadians(270.00)))
-                .splineTo(new Vector2d(-59.50, 37.25), Math.toRadians(224.08))
-                .build();
-
-        Trajectory signalOneRightBlue = drive.trajectoryBuilder(new Pose2d(36.00, 60.25, Math.toRadians(270.00)))
-                .splineTo(new Vector2d(57.50, 39.25), Math.toRadians(315.67))
-                .build();
-        Trajectory signalTwoRightBlue = drive.trajectoryBuilder(new Pose2d(36.00, 60.25, Math.toRadians(270.00)))
-                .splineTo(new Vector2d(23.25, 60.25), Math.toRadians(180.00))
-                .splineTo(new Vector2d(10.25, 18.25), Math.toRadians(252.80))
-                .splineTo(new Vector2d(34.50, 13.00), Math.toRadians(347.78))
-                .build();
-        Trajectory signalThreeRightBlue = drive.trajectoryBuilder(new Pose2d(36.00, 60.50, Math.toRadians(270.00)))
-                .splineTo(new Vector2d(23.25, 60.25), Math.toRadians(181.12))
-                .splineTo(new Vector2d(12.50, 36.75), Math.toRadians(264.16))
-                .build();
     }
 
     @Override
     public void loop() {
         ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
-
-        if (detections != null) {
-            telemetry.addData("FPS", camera.getFps());
-            telemetry.addData("Overhead ms", camera.getOverheadTimeMs());
-            telemetry.addData("Pipeline ms", camera.getPipelineTimeMs());
-
-            if (detections.size() == 0) {
-                numFramesWithoutDetection++;
-                if (numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION){
-                    aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
-                    TSEPos = 3;
+        switch (autoState) {
+            case PARK_CV:
+                if (detections.size() <= 0) {
+                    numFramesWithoutDetection++;
+                    if (numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION){
+                        aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
+                        TSEPos = 3;
+                    }
+                } else {
+                    numFramesWithoutDetection = 0;
+                    if (detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
+                    switch(detections.get(0).id){
+                        case 10:
+                            drive.followTrajectory(signalOneLeftRed);
+                            break;
+                        case 11:
+                            drive.followTrajectory(signalTwoLeftRed);
+                            break;
+                        case 21:
+                            drive.followTrajectory(signalThreeLeftRed);
+                            break;
+                    }
                 }
-            } else {
-                numFramesWithoutDetection = 0;
-                if (detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
-                if (detections.size() > 0) {
-
-                    AprilTagDetection detection = detections.get(0);
-
-                    if (detection.pose.x < 0) TSEPos = 1;
-                    else if (detection.pose.x >= 0) TSEPos = 2;
-                    telemetry.addData("test",detection.pose.x);
-                }
-            }
+                autoState = AutoState.PARK;
+            case PARK:
+                break;
         }
 
         drive.followTrajectorySequence(duck1);
