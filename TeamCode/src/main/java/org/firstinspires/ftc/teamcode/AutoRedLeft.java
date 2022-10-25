@@ -140,7 +140,7 @@ public class AutoRedLeft extends OpMode {
             case PARK_CV:
                 if (detections.size() <= 0) {
                     numFramesWithoutDetection++;
-                    if (numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION){
+                    if (numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION) {
                         aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
                         TSEPos = 3;
                     }
