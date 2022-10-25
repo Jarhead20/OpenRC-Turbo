@@ -27,9 +27,12 @@ public class Arm {
     private double armX = 0;
     private double armY = 0;
     PIDFController armPID = new PIDFController(new PIDCoefficients(6,0.01,3));
+
     double arm1Offset = 50; // angle between maxEncoder position and ground
     int maxEncoder1;
     int maxEncoder2;
+    double maxEnc1Angle;
+    double maxEnc2Angle;
 
     public Arm (HardwareMap map, Telemetry telemetry){
         arm1 = map.get(DcMotorEx.class, "arm1");
@@ -60,6 +63,9 @@ public class Arm {
         } while (arm2.getCurrent(CurrentUnit.AMPS) < 2.5);
         arm2.setVelocity(0);
         maxEncoder2 = arm2.getCurrentPosition();
+
+        maxEnc1Angle = ticksToAngle(maxEncoder1);
+        maxEnc2Angle = ticksToAngle(maxEncoder2);
     }
 
     public void move(Gamepad gamepad){
@@ -116,9 +122,6 @@ public class Arm {
     }
 
     public double[] inverseKinematics(double x, double y) {
-        double maxEnc1Angle = ticksToAngle(maxEncoder1);
-        double maxEnc2Angle = ticksToAngle(maxEncoder2);
-
         double maxPitch = 270;
         double maxRoll = 270;
         double[] angles = new double[4];
@@ -196,7 +199,7 @@ public class Arm {
          * Output is (x, y) coordinate of end of arm
          */
         double a1 = 180 - arm1Offset - ticksToAngle(q1);
-        double a2 = Math.abs(maxEncoder2 / 2 - ticksToAngle(q2));
+        double a2 = Math.abs(maxEnc2Angle / 2 - ticksToAngle(q2));
 
         double hyp = Math.sqrt(LINK1*LINK1 + LINK2*LINK2 - 2*LINK1*LINK2*Math.cos(180 - a2));
         double hyp_angle = Math.acos((LINK2*LINK2 - LINK1*LINK1 + hyp*hyp)/(-2*LINK1*hyp));
