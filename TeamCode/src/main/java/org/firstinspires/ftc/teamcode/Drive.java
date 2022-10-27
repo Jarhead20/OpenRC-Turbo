@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.sax.TextElementListener;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -25,19 +23,15 @@ public class Drive {
     private DcMotor rightFrontDrive = null;
     private DcMotor leftBackDrive = null;
     private DcMotor rightBackDrive = null;
-    public BNO055IMU imu = null;
     private double multiplier = 1;
 
     public Drive(HardwareMap map, Telemetry telemetry) {
         this.map = map;
         this.telemetry = telemetry;
-    }
-
-    public void setup() {
-        leftFrontDrive = map.get(DcMotor.class, "Motor0");
-        rightFrontDrive = map.get(DcMotor.class, "Motor1");
-        leftBackDrive = map.get(DcMotor.class, "Motor2");
-        rightBackDrive = map.get(DcMotor.class, "Motor3");
+        leftFrontDrive = map.get(DcMotor.class, "motor0");
+        rightFrontDrive = map.get(DcMotor.class, "motor1");
+        leftBackDrive = map.get(DcMotor.class, "motor2");
+        rightBackDrive = map.get(DcMotor.class, "motor3");
 
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -48,18 +42,6 @@ public class Drive {
         rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-
-        parameters.mode = BNO055IMU.SensorMode.IMU;
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.loggingEnabled = false;
-
-        imu = map.get(BNO055IMU.class, "imu");
-        imu.initialize(parameters);
-
-        telemetry.addData("Status", "Setup");
     }
 
     public void mecanum(Gamepad gamepad) {

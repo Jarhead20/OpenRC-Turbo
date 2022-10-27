@@ -15,62 +15,66 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 public class Arm {
     private final double LINK1 = 0.465;
     private final double LINK2 = 0.434;
-    private final double voltageTolerance = 0.1;
-    private final double encoderTolerance = 10;
+    private final double arm1Tolerance = 10;
+    private final double arm2Tolerance = 10;
 
     private DcMotorEx arm1;
     private DcMotorEx arm2;
     private Servo gripper;
     private Servo pitch;
     private Servo roll;
-    private AnalogInput pot;
     private double[] angles = {0,0};
     private double armX = 0;
     private double armY = 0;
-    PIDFController armPID = new PIDFController(new PIDCoefficients(6,0.01,3));
     double arm1Offset = 50; // angle between maxEncoder position and ground
-    int maxEncoder1;
-    int maxEncoder2;
+    int maxEncoder1 = 200;
+    int maxEncoder2 = 200;
+    private Telemetry telemetry;
 
     public Arm (HardwareMap map, Telemetry telemetry){
 
         arm1 = map.get(DcMotorEx.class, "arm1");
         arm2 = map.get(DcMotorEx.class, "arm2");
-        pot = map.get(AnalogInput.class, "pot");
+        arm1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        arm2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         gripper = map.get(Servo.class, "gripper");
         pitch = map.get(Servo.class, "pitch");
         roll = map.get(Servo.class, "roll");
+//        gripper.getController().pwmEnable();
+        this.telemetry = telemetry;
 
-        do {
-            arm1.setVelocity(-5);
-        } while (arm1.getCurrent(CurrentUnit.AMPS) < 2.5);
-        arm1.setVelocity(0);
-        arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        do {
-            arm1.setVelocity(5);
-        } while (arm1.getCurrent(CurrentUnit.AMPS) < 2.5);
-        arm1.setVelocity(0);
-        maxEncoder1 = arm1.getCurrentPosition();
-
-        do {
-            arm2.setVelocity(-5);
-        } while (arm2.getCurrent(CurrentUnit.AMPS) < 2.5);
-        arm2.setVelocity(0);
-        arm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        do {
-            arm2.setVelocity(5);
-        } while (arm2.getCurrent(CurrentUnit.AMPS) < 2.5);
-        arm2.setVelocity(0);
-        maxEncoder2 = arm2.getCurrentPosition();
+//        do {
+//            arm1.setVelocity(-5);
+//        } while (arm1.getCurrent(CurrentUnit.AMPS) < 2.5);
+//        arm1.setVelocity(0);
+//        arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        do {
+//            arm1.setVelocity(5);
+//        } while (arm1.getCurrent(CurrentUnit.AMPS) < 2.5);
+//        arm1.setVelocity(0);
+//        maxEncoder1 = arm1.getCurrentPosition();
+//
+//        do {
+//            arm2.setVelocity(-5);
+//        } while (arm2.getCurrent(CurrentUnit.AMPS) < 2.5);
+//        arm2.setVelocity(0);
+//        arm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        do {
+//            arm2.setVelocity(5);
+//        } while (arm2.getCurrent(CurrentUnit.AMPS) < 2.5);
+//        arm2.setVelocity(0);
+//        maxEncoder2 = arm2.getCurrentPosition();
     }
 
     public void move(Gamepad gamepad){
-        if(gamepad.a) toggleGripper();
+        if(gamepad.a) openGripper();
+        if(gamepad.b) closeGripper();
 
-        armX += gamepad.right_stick_y;
-        armY += gamepad.left_stick_y;
+        armX += gamepad.right_stick_y/10;
+        armY += gamepad.left_stick_y/10;
 
         if (gamepad.dpad_down) {
+
             armY = 0.15;
             armX = 0.7;
         } else if (gamepad.dpad_up) {
@@ -85,7 +89,7 @@ public class Arm {
         }
         if(gamepad.right_bumper) armX *= -1;
         move(armX, armY);
-
+        telemetry.addData("test", armX + " " + armY);
         if (gamepad.left_bumper) {
             // assuming 1 is FORWARD, 0 is BACKWARD
             if (gripper.getDirection() == Servo.Direction.FORWARD) {
@@ -98,23 +102,16 @@ public class Arm {
 
     public void move(double x, double y) {
         angles = getAngles(x, y);
-        arm1.setTargetPosition((int) angles[0]);
-        arm2.setTargetPosition((int) angles[1]);
-        pitch.setPosition(angles[3]);
-        // no roll
-        armPID.setTargetPosition(angleToVoltage(angles[0]));
+//        arm1.setTargetPosition((int) angles[0]);
+//        arm2.setTargetPosition((int) angles[1]);
+        pitch.setPosition(angles[3]/180);
     }
 
-    public void update(){
-        arm1.setPower(armPID.update(pot.getVoltage()));
-    }
 
     public boolean atTarget(){
         double[] angles = getAngles(armX, armY); // technically is now ticks not angles
-        double pV = pot.getVoltage();
-        double tV = angleToVoltage(angles[0]);
         // the 2 numbers are the target tolerances
-        return (Math.abs(pV-tV) < voltageTolerance && Math.abs(arm2.getCurrentPosition() - arm1.getTargetPosition()) < encoderTolerance);
+        return (Math.abs(arm2.getCurrentPosition() - arm2.getTargetPosition()) < arm2Tolerance && Math.abs(arm1.getCurrentPosition() - arm1.getTargetPosition()) < arm1Tolerance);
     }
 
     public double[] getAngles(double x, double y) {
@@ -156,10 +153,10 @@ public class Arm {
             angles[2] = 0;
         }
         angles[2] /= maxPitch; // to convert to servo motor value
-        if ((arm1.getCurrentPosition() > maxEncoder1 / 2) && (x < 0)) {
+        if ( (x < 0)) {
             // going right to left
             angles[3] -= 180;
-        } else if ((arm1.getCurrentPosition() < maxEncoder1 / 2) && (x > 0)) {
+        } else if ( (x > 0)) {
             // left to right
             angles[3] += 180;
         }
@@ -169,14 +166,19 @@ public class Arm {
 
     public void closeGripper(){
         gripper.setPosition(0);
+        telemetry.addData("test", gripper.getPosition());
     }
 
     public void openGripper(){
         gripper.setPosition(1.0);
+        telemetry.addData("test", gripper.getPosition());
     }
 
     public void toggleGripper(){
-        gripper.setPosition(gripper.getPosition() > 0.9 ? 0 : 1.0);
+
+            gripper.setPosition(gripper.getPosition() > 0.9 ? 0 : 1.0);
+            telemetry.addData("test", gripper.getPosition());
+
     }
 
     public int angleToTicks(double a) {

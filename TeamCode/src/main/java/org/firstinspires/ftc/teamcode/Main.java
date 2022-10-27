@@ -25,9 +25,7 @@ public class Main extends OpMode
     private ElapsedTime runtime = new ElapsedTime();
     private double currentTime;
     private Drive drive;
-    private int total = 0;
-    private int total2 = 0;
-    private double speed = 0;
+    private Arm arm;
 
     /* code to move the arm (once an object is collected) to its desired position (height of the
     highest pole), then let go of the object and reset to Collection state
@@ -35,17 +33,7 @@ public class Main extends OpMode
     simultaneously control the drive train
     */
 
-    public enum ArmState {
-        START,
-        MOVE_MIDDLE, // when the desiredX is on the opposite side to currentX, moves to (0, 0.4) then desired
-        MOVE,
-        GRIPPER,
-        RETURN
-    }
-    ArmState armState = ArmState.START;
-    boolean collect; // set in START, whether arm will connect an object
-    double desiredX;
-    double desiredY;
+
 
     @Override
     public void init() {
@@ -53,7 +41,8 @@ public class Main extends OpMode
 //        arm1 = hardwareMap.get(DcMotorEx.class, "arm1");
 //        arm2 = hardwareMap.get(DcMotorEx.class, "arm2");
         drive = new Drive(hardwareMap,telemetry);
-        drive.setup();
+        arm = new Arm(hardwareMap, telemetry);
+
 //        arm1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        arm2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -73,117 +62,118 @@ public class Main extends OpMode
 
     @Override
     public void loop() {
-        switch (armState) {
-            case START:
-                // Waiting for some input
-                // just dpad button is open, rBumper is closed
-                // closed is left, open is right
-                // driver holds rBumper if needed, then presses button
-                if (gamepad1.dpad_left) {
-                    if (gamepad1.right_bumper) {
-                        desiredX = -0.4; // change the numbers
-                    } else {
-                        desiredX = 0.4;
-                    }
-                    desiredY = 0.15;
-                    collect = true;
-                    armState = ArmState.MOVE;
-                } else if (gamepad1.dpad_up) {
-                    if (gamepad1.right_bumper) {
-                        desiredX = -0.4;
-                    } else {
-                        desiredX = 0.4;
-                    }
-                    desiredY = 0.7;
-                    armState = ArmState.MOVE;
-                } else if (gamepad1.dpad_right) {
-                    if (gamepad1.right_bumper) {
-                        desiredX = -0.4;
-                    } else {
-                        desiredX = 0.4;
-                    }
-                    desiredY = 0.5;
-                    armState = ArmState.MOVE;
-                } else if (gamepad1.dpad_down) {
-                    if (gamepad1.right_bumper) {
-                        desiredX = -0.4;
-                    } else {
-                        desiredX = 0.4;
-                    }
-                    desiredY = 0.3;
-                    armState = ArmState.MOVE;
-                }
-                if (!Double.isNaN(desiredX) && !Double.isNaN(desiredY)) {
-                    if ((drive.getArm1().getCurrentPosition() * 8 - 90) * (drive.getArm1().getCurrentPosition() * 8 - 90) < 0) {
-                        // if desired and current on opposite sides
-                        drive.armIk(0, 0.4, true);
-                        armState = armState.MOVE_MIDDLE;
-                    } else {
-                        drive.armIk(desiredX, desiredY, true);
-                        if (collect) {
-//                            open gripper;
-                        }
-                    }
-                }
-                break;
-
-            case MOVE_MIDDLE:
-                if (drive.getArm1().getCurrentPosition() != drive.getArm1().getTargetPosition()) {
-                    break;
-                    roll
-                } else if (drive.getArm2().getCurrentPosition() != drive.getArm2().getTargetPosition()) {
-                    break;
-                }
-                drive.armIk(desiredX, desiredY, true);
-                if (collect) {
-                    open gripper;
-                }
-                armState = ArmState.MOVE;
-                break;
-
-            case MOVE:
-                if (drive.getArm1().getCurrentPosition() != drive.getArm1().getTargetPosition()) {
-                    break;
-                    roll
-                } else if (drive.getArm2().getCurrentPosition() != drive.getArm2().getTargetPosition()) {
-                    break;
-                }
-                if (collect) {
-                    close gripper
-                } else {
-                    open gripper
-                }
-                armState = ArmState.GRIPPER;
-                currentTime = runtime.now(TimeUnit.MILLISECONDS);
-                break;
-
-            case GRIPPER:
-                if (runtime.now(TimeUnit.MILLISECONDS) == currentTime + 200) {
-                    drive.armIk(desiredX, desiredY, true);
-                    armState = ArmState.RETURN;
-                }
-                break;
-
-            case RETURN:
-                if (drive.getArm1().getCurrentPosition() != drive.getArm1().getTargetPosition()) {
-                    break;
-                }
-                if (drive.getArm2().getCurrentPosition() != drive.getArm2().getTargetPosition()) {
-                    break;
-                }
-                armState = ArmState.START;
-            default:
-                // should never be reached, as armState should never be null
-                armState = ArmState.START;
-        }
-
-        if(!drive.imu.isGyroCalibrated()) return;
-        total += gamepad2.left_stick_y*2;
-        total2 += gamepad1.right_stick_y*2;
+//        switch (armState) {
+//            case START:
+//                // Waiting for some input
+//                // just dpad button is open, rBumper is closed
+//                // closed is left, open is right
+//                // driver holds rBumper if needed, then presses button
+//                if (gamepad1.dpad_left) {
+//                    if (gamepad1.right_bumper) {
+//                        desiredX = -0.4; // change the numbers
+//                    } else {
+//                        desiredX = 0.4;
+//                    }
+//                    desiredY = 0.15;
+//                    collect = true;
+//                    armState = ArmState.MOVE;
+//                } else if (gamepad1.dpad_up) {
+//                    if (gamepad1.right_bumper) {
+//                        desiredX = -0.4;
+//                    } else {
+//                        desiredX = 0.4;
+//                    }
+//                    desiredY = 0.7;
+//                    armState = ArmState.MOVE;
+//                } else if (gamepad1.dpad_right) {
+//                    if (gamepad1.right_bumper) {
+//                        desiredX = -0.4;
+//                    } else {
+//                        desiredX = 0.4;
+//                    }
+//                    desiredY = 0.5;
+//                    armState = ArmState.MOVE;
+//                } else if (gamepad1.dpad_down) {
+//                    if (gamepad1.right_bumper) {
+//                        desiredX = -0.4;
+//                    } else {
+//                        desiredX = 0.4;
+//                    }
+//                    desiredY = 0.3;
+//                    armState = ArmState.MOVE;
+//                }
+//                if (!Double.isNaN(desiredX) && !Double.isNaN(desiredY)) {
+//                    if ((drive.getArm1().getCurrentPosition() * 8 - 90) * (drive.getArm1().getCurrentPosition() * 8 - 90) < 0) {
+//                        // if desired and current on opposite sides
+//                        drive.armIk(0, 0.4, true);
+//                        armState = armState.MOVE_MIDDLE;
+//                    } else {
+//                        drive.armIk(desiredX, desiredY, true);
+//                        if (collect) {
+////                            open gripper;
+//                        }
+//                    }
+//                }
+//                break;
+//
+//            case MOVE_MIDDLE:
+//                if (drive.getArm1().getCurrentPosition() != drive.getArm1().getTargetPosition()) {
+//                    break;
+//                    roll
+//                } else if (drive.getArm2().getCurrentPosition() != drive.getArm2().getTargetPosition()) {
+//                    break;
+//                }
+//                drive.armIk(desiredX, desiredY, true);
+//                if (collect) {
+//                    open gripper;
+//                }
+//                armState = ArmState.MOVE;
+//                break;
+//
+//            case MOVE:
+//                if (drive.getArm1().getCurrentPosition() != drive.getArm1().getTargetPosition()) {
+//                    break;
+//                    roll
+//                } else if (drive.getArm2().getCurrentPosition() != drive.getArm2().getTargetPosition()) {
+//                    break;
+//                }
+//                if (collect) {
+//                    close gripper
+//                } else {
+//                    open gripper
+//                }
+//                armState = ArmState.GRIPPER;
+//                currentTime = runtime.now(TimeUnit.MILLISECONDS);
+//                break;
+//
+//            case GRIPPER:
+//                if (runtime.now(TimeUnit.MILLISECONDS) == currentTime + 200) {
+//                    drive.armIk(desiredX, desiredY, true);
+//                    armState = ArmState.RETURN;
+//                }
+//                break;
+//
+//            case RETURN:
+//                if (drive.getArm1().getCurrentPosition() != drive.getArm1().getTargetPosition()) {
+//                    break;
+//                }
+//                if (drive.getArm2().getCurrentPosition() != drive.getArm2().getTargetPosition()) {
+//                    break;
+//                }
+//                armState = ArmState.START;
+//            default:
+//                // should never be reached, as armState should never be null
+//                armState = ArmState.START;
+//        }
+//
+//        if(!drive.imu.isGyroCalibrated()) return;
+//        total += gamepad2.left_stick_y*2;
+//        total2 += gamepad1.right_stick_y*2;
 
 //        arm1.setPower(gamepad2.left_stick_y);
 //        arm2.setPower(gamepad2.right_stick_y);
 
+        arm.move(gamepad2);
         drive.setMultiplier(0.5);
         if (gamepad1.right_bumper)
             drive.setMultiplier(1);

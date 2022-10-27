@@ -48,11 +48,7 @@ public class TestAuto extends LinearOpMode {
     final int THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION = 4;
 
     public SampleMecanumDrive drive;
-    public Drive d;
 
-    Trajectory deposit;
-    TrajectorySequence duck1;
-    Trajectory duck2;
 
     public enum State {
         START,
@@ -71,8 +67,6 @@ public class TestAuto extends LinearOpMode {
         timer.reset();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         drive = new SampleMecanumDrive(hardwareMap);
-        d = new Drive(hardwareMap, telemetry);
-//        d.setup();
 
         startPose = new Pose2d(-60, -60, Math.toRadians(180));
 //        startPose = new Pose2d(-60, -60, Math.toRadians(90));
@@ -115,112 +109,23 @@ public class TestAuto extends LinearOpMode {
 
 
         telemetry.addData("Realtime analysis", TSEPos);
-//        Pose2d test = new Pose2d(-53.2,41.6, Math.toRadians(-79)), Math.toRadians(-79);
-        deposit = drive.trajectoryBuilder(startPose, true)
 
 
 
-                .splineTo(new Vector2d(-10,-40),Math.toRadians(90))
-                .addDisplacementMarker(() -> state = State.EXTEND)
-                .build();
-
-        duck1 = drive.trajectorySequenceBuilder(startPose)
-                .forward(10)
-                .strafeLeft(4)
-
-                //.splineTo(new Vector2d(-70, -60), Math.toRadians(180))
-                .addDisplacementMarker(() -> {
-                })
-
-                .back(10)
-                .strafeLeft(4)
-                .back(100)
-                //.splineToConstantHeading(new Vector2d(55, -65), Math.toRadians(180))
-                .build();
 
 
         if(isStopRequested()) return;
 
-        drive.followTrajectorySequence(duck1);
-        //drive.followTrajectory(deposit);
+
 
 
         while(!isStopRequested()){
-            drive.update();
-
-            //drive.followTrajectorySequence(duck1);
-
-//            switch (state){
-//                case START:
-//
-//
-//                    drive.followTrajectory(deposit);
-//                    break;
-//                case EXTEND:
-//                    switch(TSEPos){
-//                        case 1:
-//                            d.slideDrive.setTargetPosition(-3500);
-//                            d.slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//                            d.slideDrive.setPower(1);
-//                            if(d.slideDrive.getCurrentPosition() >= -3400)  {
-//                                d.ramp.setPosition(0.4);
-//                                d.servo.setPosition(0);
-//                            }
-//                            else {
-//                                d.ramp.setPosition(0.5);
-//                                d.servo.setPosition(0.5);
-//                            }
-//                            break;
-//                        case 2:
-//                            d.slideDrive.setTargetPosition(-3500);
-//                            d.slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//                            d.slideDrive.setPower(1);
-//                            if(d.slideDrive.getCurrentPosition() >= -3400)  {
-//                                d.ramp.setPosition(0.2);
-//                                d.servo.setPosition(0);
-//                            }
-//                            else {
-//                                d.ramp.setPosition(0.5);
-//                                d.servo.setPosition(0.5);
-//                            }
-//                            break;
-//                        case 3:
-//
-//                            d.slideDrive.setTargetPosition(-4400);
-//                            d.slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//                            d.slideDrive.setPower(1);
-//                            if(d.slideDrive.getCurrentPosition() <= -4300) {
-//                                d.ramp.setPosition(0.5);
-//                                d.servo.setPosition(0);
-//                            }
-//                            else if(d.slideDrive.getCurrentPosition() >= -400) d.servo.setPosition(0.5);
-//                            else {
-//                                d.ramp.setPosition(0.5);
-//                                d.servo.setPosition(0.5);
-//                            }
-//                            break;
-//                        default:
-//                            break;
-//                    }
-//
-//                    if(d.slideDrive.getCurrentPosition() >  d.slideDrive.getTargetPosition()-50 && d.slideDrive.getCurrentPosition() < d.slideDrive.getTargetPosition() + 50) {
-//                        timer.reset();
-//                        state = State.RETRACT;
-//                    }
-//                    break;
-//
-//                case RETRACT:
-//                    d.slideDrive.setTargetPosition(-1000);
-//    //                d.position = 4;
-//    //                if(d.slideDrive.getCurrentPosition() >  d.slideDrive.getTargetPosition()-50 && d.slideDrive.getCurrentPosition() < d.slideDrive.getTargetPosition() + 50)
-//    //                    drive.followTrajectorySequence(duck1);
-//                    break;
-//                default:
-//                    break;
-//            }
-
-
-        //d.slide(d.position);
+            Trajectory untitled0 = drive.trajectoryBuilder(new Pose2d(-18.37, -40.00, Math.toRadians(29.05)))
+                    .splineTo(new Vector2d(33.19, 3.70), Math.toRadians(129.98))
+                    .splineTo(new Vector2d(-13.78, 42.22), Math.toRadians(227.28))
+                    .splineTo(new Vector2d(-46.37, -8.30), Math.toRadians(237.17))
+                    .splineTo(new Vector2d(-22.81, -21.63), Math.toRadians(5.66))
+                    .build();
 
         }
 
