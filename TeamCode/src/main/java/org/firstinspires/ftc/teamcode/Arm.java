@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -26,46 +27,84 @@ public class Arm {
     private AnalogInput pot;
     private double armX = 0;
     private double armY = 0;
+    private int j = 0;
     PIDFController armPID = new PIDFController(new PIDCoefficients(6,0.01,3));
 
-    double arm1Offset = 50; // angle between maxEncoder position and ground
+    double arm1Offset = -100; // angle between maxEncoder position and ground
     int maxEncoder1;
     int maxEncoder2;
     double maxEnc1Angle;
     double maxEnc2Angle;
+    Telemetry telemetry;
 
     public Arm (HardwareMap map, Telemetry telemetry){
+        this.telemetry = telemetry;
         arm1 = map.get(DcMotorEx.class, "arm1");
         arm2 = map.get(DcMotorEx.class, "arm2");
         pot = map.get(AnalogInput.class, "pot");
         gripper = map.get(Servo.class, "gripper");
         pitch = map.get(Servo.class, "pitch");
         roll = map.get(Servo.class, "roll");
+        arm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        do {
-            arm1.setVelocity(-5);
-        } while (arm1.getCurrent(CurrentUnit.AMPS) < 2.5);
-        arm1.setVelocity(0);
-        arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        do {
-            arm1.setVelocity(5);
-        } while (arm1.getCurrent(CurrentUnit.AMPS) < 2.5);
-        arm1.setVelocity(0);
-        maxEncoder1 = arm1.getCurrentPosition();
+    }
 
-        do {
-            arm2.setVelocity(-5);
-        } while (arm2.getCurrent(CurrentUnit.AMPS) < 2.5);
-        arm2.setVelocity(0);
-        arm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        do {
-            arm2.setVelocity(5);
-        } while (arm2.getCurrent(CurrentUnit.AMPS) < 2.5);
-        arm2.setVelocity(0);
-        maxEncoder2 = arm2.getCurrentPosition();
+    public void initLoop(ElapsedTime runtime) throws InterruptedException {
+//        double t = runtime.seconds();
+        double currentLimit = 4;
+        double velocity = 100;
+        telemetry.addData("arm1", arm1.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("arm2", arm2.getCurrent(CurrentUnit.AMPS) + " " + arm2.getVelocity());
+        if(j == 0)
+            if (arm1.getCurrent(CurrentUnit.AMPS) < currentLimit) {
+                arm1.setVelocity(-velocity);
+                return;
+            } else {
+                arm1.setVelocity(0);
+
+                arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                runtime.reset();
+                j++;
+            }
+
+        if(j==1)
+            if (arm1.getCurrent(CurrentUnit.AMPS) < currentLimit) {
+                arm1.setVelocity(velocity);
+                return;
+            } else {
+                arm1.setVelocity(0);
+                maxEncoder1 = arm1.getCurrentPosition();
+                if(runtime.seconds() > 2){
+                    j++;
+                    runtime.reset();
+                }
+
+            }
+
+//        if(j==2)
+//            if (arm2.getCurrent(CurrentUnit.AMPS) < currentLimit) {
+//                arm2.setVelocity(-velocity);
+//                return;
+//            } else {
+//                arm2.setVelocity(0);
+//                arm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                j++;
+//            }
+//
+//        if(j==3)
+//            if (arm2.getCurrent(CurrentUnit.AMPS) < currentLimit) {
+//                arm2.setVelocity(velocity);
+//                return;
+//            } else {
+//                arm2.setVelocity(0);
+//                maxEncoder2 = arm2.getCurrentPosition();
+//                j++;
+//            }
 
         maxEnc1Angle = ticksToAngle(maxEncoder1);
         maxEnc2Angle = ticksToAngle(maxEncoder2);
+        telemetry.addData("arm1 data", arm1.getCurrentPosition() + " " + maxEncoder1);
     }
 
     public void move(Gamepad gamepad){
@@ -104,6 +143,13 @@ public class Arm {
         double[] angles = inverseKinematics(x, y);
         arm1.setTargetPosition((int) angles[0]);
         arm2.setTargetPosition((int) angles[1]);
+        arm1.setPower(1);
+        arm2.setPower(1);
+        arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        telemetry.addData("base target", angles[0] + " " + arm1Offset);
+        telemetry.addData("top target", angles[1]);
         pitch.setPosition(angles[2]);
         roll.setPosition(angles[3]);
         armPID.setTargetPosition(angleToVoltage(angles[0]));
@@ -147,7 +193,7 @@ public class Arm {
             // angle[1] is measured from extension of link1
             // makes angles make sense compared to encoders
             angles[0] = Math.toDegrees(angles[0]);
-            angles[0] = Math.toDegrees(angles[1]);
+            angles[1] = Math.toDegrees(angles[1]);
             if (x > 0) {
                 angles[0] = (int) (maxEnc1Angle - angles[0] + arm1Offset);
                 angles[1] = (int) (maxEnc2Angle / 2 + angles[1]);
@@ -187,9 +233,11 @@ public class Arm {
             // left to right
             angles[3] += 180;
         }
+        telemetry.addData("angle 1", angles[0]);
+        telemetry.addData("angle 2", angles[1]);
+        angles[0] = angleToTicks(angles[0]);
+        angles[1] = angleToTicks(angles[1]);
 
-        angles[0] = angleToTicks(Math.toDegrees(angles[0]));
-        angles[1] = angleToTicks(Math.toDegrees(angles[1]));
         return angles;
     }
 
