@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -39,19 +41,27 @@ public class Main extends OpMode
 
     @Override
     public void init() {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         telemetry.addData("Status", "Initialized");
 //        arm1 = hardwareMap.get(DcMotorEx.class, "arm1");
 //        arm2 = hardwareMap.get(DcMotorEx.class, "arm2");
         drive = new Drive(hardwareMap,telemetry);
+        arm = new Arm(hardwareMap, telemetry);
 //        arm1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        arm2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //        arm1.setTargetPosition(0);
 //        arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        runtime.reset();
     }
 
     @Override
     public void init_loop() {
+        try{
+            arm.initLoop(runtime);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 
