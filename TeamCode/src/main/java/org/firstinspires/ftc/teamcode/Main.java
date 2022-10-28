@@ -43,7 +43,6 @@ public class Main extends OpMode
 //        arm1 = hardwareMap.get(DcMotorEx.class, "arm1");
 //        arm2 = hardwareMap.get(DcMotorEx.class, "arm2");
         drive = new Drive(hardwareMap,telemetry);
-        drive.setup();
 //        arm1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        arm2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -63,8 +62,6 @@ public class Main extends OpMode
 
     @Override
     public void loop() {
-
-        if(!drive.imu.isGyroCalibrated()) return;
         total += gamepad2.left_stick_y*2;
         total2 += gamepad1.right_stick_y*2;
 

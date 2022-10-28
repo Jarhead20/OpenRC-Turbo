@@ -81,7 +81,6 @@ public class AutoRedLeft extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         drive = new SampleMecanumDrive(hardwareMap);
         d = new Drive(hardwareMap, telemetry);
-        d.setup();
 
         startPose = new Pose2d(-60, -60, Math.toRadians(180));
 //        startPose = new Pose2d(-60, -60, Math.toRadians(90));
