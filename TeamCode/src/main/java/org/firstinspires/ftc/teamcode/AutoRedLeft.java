@@ -50,19 +50,14 @@ public class AutoRedLeft extends OpMode {
     public SampleMecanumDrive drive;
     public Drive d;
 
-    TrajectorySequence duck1;// [object][num][Alliance side relative to field][Alliance]
-    Trajectory signalOneLeftRed = drive.trajectoryBuilder(new Pose2d(0, 0, Math.toRadians(90.00)))
-            .splineTo(new Vector2d(-59.50, -37.25), Math.toRadians(135.92))
+    Trajectory signalOne = drive.trajectoryBuilder(new Pose2d(0.00, 7, Math.toRadians(90.00)))
+            .splineTo(new Vector2d(-13.38, 34.38), Math.toRadians(171.87))
             .build();
-    Trajectory signalTwoLeftRed = drive.trajectoryBuilder(new Pose2d(0, 0, Math.toRadians(90.00)))
-            .splineTo(new Vector2d(-51.17, -54.00), Math.toRadians(152.70))
-            .splineTo(new Vector2d(-58.83, -26.83), Math.toRadians(105.76))
-            .splineTo(new Vector2d(-59.00, -15.33), Math.toRadians(90.83))
-            .splineTo(new Vector2d(-36.83, -10.83), Math.toRadians(11.48))
+    Trajectory signalTwo = drive.trajectoryBuilder(new Pose2d(-0.23, 7, Math.toRadians(90.00)))
+            .splineTo(new Vector2d(0.69, 34.62), Math.toRadians(88.99))
             .build();
-    Trajectory signalThreeLeftRed = drive.trajectoryBuilder(new Pose2d(-35.67, -60.83, Math.toRadians(90.00)))
-            .splineTo(new Vector2d(-16.33, -61.50), Math.toRadians(-1.97))
-            .splineTo(new Vector2d(-12.67, -36.33), Math.toRadians(81.05))
+    Trajectory signalThree = drive.trajectoryBuilder(new Pose2d(0.23, 7, Math.toRadians(90.00)))
+            .splineTo(new Vector2d(11.31, 35.08), Math.toRadians(-1.85))
             .build();
 
     public enum AutoState {
@@ -95,6 +90,7 @@ public class AutoRedLeft extends OpMode {
         ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
         switch (autoState) {
             case PARK_CV:
+                // this doesn't work at all
                 if (detections.size() <= 0) {
                     numFramesWithoutDetection++;
                     if (numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION) {
@@ -106,13 +102,13 @@ public class AutoRedLeft extends OpMode {
                     if (detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
                     switch(detections.get(0).id){
                         case 10:
-                            drive.followTrajectory(signalOneLeftRed);
+                            drive.followTrajectory(signalOne);
                             break;
                         case 11:
-                            drive.followTrajectory(signalTwoLeftRed);
+                            drive.followTrajectory(signalTwo);
                             break;
                         case 21:
-                            drive.followTrajectory(signalThreeLeftRed);
+                            drive.followTrajectory(signalThree);
                             break;
                     }
                 }
@@ -120,12 +116,7 @@ public class AutoRedLeft extends OpMode {
             case PARK:
                 break;
         }
-
-        drive.followTrajectorySequence(duck1);
-        //drive.followTrajectory(deposit);
-
     }
-
             //drive.followTrajectorySequence(duck1);
 
 //            switch (state){

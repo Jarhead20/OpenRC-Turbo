@@ -47,7 +47,6 @@ public class Arm {
         roll = map.get(Servo.class, "roll");
         arm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         arm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
     }
 
     public void initLoop(ElapsedTime runtime) throws InterruptedException {
@@ -238,6 +237,7 @@ public class Arm {
         angles[0] = angleToTicks(angles[0]);
         angles[1] = angleToTicks(angles[1]);
 
+        angles[1] -= angles[0];
         return angles;
     }
 
