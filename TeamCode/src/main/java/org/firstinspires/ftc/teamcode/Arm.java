@@ -188,8 +188,8 @@ public class Arm {
             angles[3] += 180;
         }
 
-        angles[0] = angleToTicks(Math.toDegrees(angles[0])) * 20 / 9;
-        angles[1] = angleToTicks(Math.toDegrees(angles[1])) * 20 / 9;
+        angles[0] = angleToTicks(Math.toDegrees(angles[0])) / 20 * 9;
+        angles[1] = angleToTicks(Math.toDegrees(angles[1])) / 20 * 9;
 
         return angles;
     }
