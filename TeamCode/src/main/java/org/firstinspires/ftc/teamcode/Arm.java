@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -45,8 +44,8 @@ public class Arm {
         gripper = map.get(Servo.class, "gripper");
         pitch = map.get(Servo.class, "pitch");
         roll = map.get(Servo.class, "roll");
-        arm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        arm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm1.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        arm2.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
     }
 
     public void initLoop(ElapsedTime runtime) throws InterruptedException {
@@ -62,7 +61,7 @@ public class Arm {
             } else {
                 arm1.setVelocity(0);
 
-                arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                arm1.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
                 runtime.reset();
                 j++;
             }
@@ -78,7 +77,6 @@ public class Arm {
                     j++;
                     runtime.reset();
                 }
-
             }
 
 //        if(j==2)
@@ -87,7 +85,7 @@ public class Arm {
 //                return;
 //            } else {
 //                arm2.setVelocity(0);
-//                arm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                arm2.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
 //                j++;
 //            }
 //
@@ -144,8 +142,8 @@ public class Arm {
         arm2.setTargetPosition((int) angles[1]);
         arm1.setPower(1);
         arm2.setPower(1);
-        arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        arm2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm1.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        arm2.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
 
         telemetry.addData("base target", angles[0] + " " + arm1Offset);
         telemetry.addData("top target", angles[1]);
@@ -214,9 +212,8 @@ public class Arm {
             angles[2] = 1 - angles[2];
         }
 
-        // roll
-        // assuming that view from left side is:
-        /*
+        /* roll
+        assuming that view from left side is:
         bigger encoder value
               ___
              /   \
@@ -242,9 +239,9 @@ public class Arm {
     }
 
     public double[] forwardKinematics(int q1, int q2) {
-        /**
-         * Input is number of encoder ticks
-         * Output is (x, y) coordinate of end of arm
+        /*
+          Input is number of encoder ticks
+          Output is (x, y) coordinate of end of arm
          */
         double a1 = 180 - arm1Offset - ticksToAngle(q1);
         double a2 = Math.abs(maxEnc2Angle / 2 - ticksToAngle(q2));
