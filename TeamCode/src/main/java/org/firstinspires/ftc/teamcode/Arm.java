@@ -192,11 +192,11 @@ public class Arm {
             angles[0] = Math.toDegrees(angles[0]);
             angles[1] = Math.toDegrees(angles[1]);
             if (x > 0) {
-                angles[0] = (int) (maxEnc1Angle - angles[0] + arm1Offset);
-                angles[1] = (int) (maxEnc2Angle / 2 + angles[1]);
+                angles[1] = maxEnc2Angle / 2 + angles[1];
+                angles[0] = maxEnc1Angle - angles[0] + arm1Offset;
             } else if (x < 0) {
-                angles[0] = (int) (angles[0] - arm1Offset);
-                angles[1] = (int) (maxEnc2Angle - angles[1]);
+                angles[0] -= arm1Offset;
+                angles[1] = maxEnc2Angle - angles[1];
             }
         }
 
@@ -209,8 +209,8 @@ public class Arm {
         angles[2] /= maxPitch; // to convert to servo motor value
         if (arm1.getCurrentPosition() > maxEnc1Angle / 2) {
 //            inverts pitch if on right side (since roll turns it upside down)
-            angles[2] = 1 - angles[2];
         }
+        angles[2] = 1 - angles[2];
 
         /* roll
         assuming that view from left side is:
@@ -231,8 +231,8 @@ public class Arm {
         }
         telemetry.addData("angle 1", angles[0]);
         telemetry.addData("angle 2", angles[1]);
-        angles[0] = angleToTicks(angles[0]);
-        angles[1] = angleToTicks(angles[1]);
+        angles[0] = (double) angleToTicks(angles[0]);
+        angles[1] = (double) angleToTicks(angles[1]);
 
         angles[1] -= angles[0];
         return angles;
