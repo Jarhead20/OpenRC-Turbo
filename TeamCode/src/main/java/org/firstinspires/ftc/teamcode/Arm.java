@@ -34,6 +34,8 @@ public class Arm {
     int maxEncoder2;
     double maxEnc1Angle;
     double maxEnc2Angle;
+    double maxPitch = 270;
+    double maxRoll = 270;
 
     Telemetry telemetry;
 
@@ -146,8 +148,6 @@ public class Arm {
     }
 
     public double[] inverseKinematics(double x, double y) {
-        double maxPitch = 270;
-        double maxRoll = 270;
         double[] angles = new double[4];
         // when x is 0 trig works differently
         if (x == 0) {
@@ -190,8 +190,8 @@ public class Arm {
         angles[2] /= maxPitch; // to convert to servo motor value
         if (arm1.getCurrentPosition() > maxEnc1Angle / 2) {
 //            inverts pitch if on right side (since roll turns it upside down)
+            angles[2] = 1 - angles[2];
         }
-        angles[2] = 1 - angles[2];
 
         /* roll
         assuming that view from left side is:
