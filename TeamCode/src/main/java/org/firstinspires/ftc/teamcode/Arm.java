@@ -29,11 +29,12 @@ public class Arm {
     private int j = 0;
     PIDFController armPID = new PIDFController(new PIDCoefficients(6,0.01,3));
 
-    double arm1Offset = -100; // angle between maxEncoder position and ground
+    double arm1Offset = -100; // angle between maxEncoder1 position and ground
     int maxEncoder1;
     int maxEncoder2;
     double maxEnc1Angle;
     double maxEnc2Angle;
+
     Telemetry telemetry;
 
     public Arm (HardwareMap map, Telemetry telemetry){
@@ -78,26 +79,6 @@ public class Arm {
                     runtime.reset();
                 }
             }
-
-//        if(j==2)
-//            if (arm2.getCurrent(CurrentUnit.AMPS) < currentLimit) {
-//                arm2.setVelocity(-velocity);
-//                return;
-//            } else {
-//                arm2.setVelocity(0);
-//                arm2.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-//                j++;
-//            }
-//
-//        if(j==3)
-//            if (arm2.getCurrent(CurrentUnit.AMPS) < currentLimit) {
-//                arm2.setVelocity(velocity);
-//                return;
-//            } else {
-//                arm2.setVelocity(0);
-//                maxEncoder2 = arm2.getCurrentPosition();
-//                j++;
-//            }
 
         maxEnc1Angle = ticksToAngle(maxEncoder1);
         maxEnc2Angle = ticksToAngle(maxEncoder2);
