@@ -70,6 +70,8 @@ public class AutoRedLeft extends OpMode {
 
     ElapsedTime timer = new ElapsedTime();
 
+    int cameraMonitorViewId;
+
     @Override
     public void init() {
         timer.reset();
@@ -83,6 +85,24 @@ public class AutoRedLeft extends OpMode {
         doCV();
 
         telemetry.addData("Realtime analysis", TSEPos);
+
+        cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
+
+        camera.setPipeline(aprilTagDetectionPipeline);
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                camera.startStreaming(1280,720, OpenCvCameraRotation.UPRIGHT);
+                FtcDashboard.getInstance().startCameraStream(camera, 500);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+
+            }
+        });
     }
 
     @Override
@@ -90,29 +110,46 @@ public class AutoRedLeft extends OpMode {
         ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
         switch (autoState) {
             case PARK_CV:
-                // this doesn't work at all
-                if (detections.size() <= 0) {
-                    numFramesWithoutDetection++;
-                    if (numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION) {
-                        aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
-                        TSEPos = 3;
+                // If there's been a new frame...
+                if(detections != null)
+                {
+                    telemetry.addData("FPS", camera.getFps());
+                    telemetry.addData("Overhead ms", camera.getOverheadTimeMs());
+                    telemetry.addData("Pipeline ms", camera.getPipelineTimeMs());
+
+                    // If we don't see any tags
+                    if(detections.size() == 0)
+                    {
+                        numFramesWithoutDetection++;
+                        if(numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION) aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
                     }
-                } else {
-                    numFramesWithoutDetection = 0;
-                    if (detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
-                    switch(detections.get(0).id){
-                        case 10:
-                            drive.followTrajectory(signalOne);
-                            break;
-                        case 11:
-                            drive.followTrajectory(signalTwo);
-                            break;
-                        case 21:
-                            drive.followTrajectory(signalThree);
-                            break;
+                    else
+                    {
+                        numFramesWithoutDetection = 0;
+                        // If the target is within 1 meter, turn on high decimation to
+                        // increase the frame rate
+                        if(detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
+                        for(AprilTagDetection detection : detections)
+                        {
+                            switch(detection.id){
+                                case 10:
+                                    telemetry.addData("Signal", "1");
+                                    drive.followTrajectory(signalOne);
+                                    break;
+                                case 11:
+                                    telemetry.addData("Signal", "2");
+                                    drive.followTrajectory(signalTwo);
+                                    break;
+                                case 21:
+                                    telemetry.addData("Signal", "3");
+                                    drive.followTrajectory(signalTwo);
+                                    break;
+                            }
+                        }
                     }
+                    telemetry.update();
+                    autoState = AutoState.PARK;
                 }
-                autoState = AutoState.PARK;
             case PARK:
                 break;
         }
