@@ -49,7 +49,7 @@ public class Drive {
         double r = Math.hypot(gamepad.left_stick_x, gamepad.left_stick_y) * multiplier;
         double robotAngle = Math.atan2(-gamepad.left_stick_y, gamepad.left_stick_x) - Math.PI / 4;
         telemetry.addData("angle", robotAngle);
-        double rightX = gamepad.right_stick_x;
+        double rightX = gamepad.right_stick_x/3;
         double[] v = new double[4];
         v[0] = r * Math.cos(robotAngle) + rightX;
         v[1] = r * Math.sin(robotAngle) - rightX;

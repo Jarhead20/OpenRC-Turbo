@@ -46,7 +46,7 @@ public class Main extends OpMode
 //        arm1 = hardwareMap.get(DcMotorEx.class, "arm1");
 //        arm2 = hardwareMap.get(DcMotorEx.class, "arm2");
         drive = new Drive(hardwareMap,telemetry);
-        arm = new Arm(hardwareMap, telemetry);
+        arm = new Arm(hardwareMap, telemetry, runtime);
 //        arm1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        arm2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -58,7 +58,7 @@ public class Main extends OpMode
     @Override
     public void init_loop() {
         try{
-            arm.initLoop(runtime);
+            arm.initLoop();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

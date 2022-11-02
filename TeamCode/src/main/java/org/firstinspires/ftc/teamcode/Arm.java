@@ -5,10 +5,12 @@ import com.acmerobotics.roadrunner.control.PIDFController;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -31,71 +33,75 @@ public class Arm {
     PIDFController armPID = new PIDFController(new PIDCoefficients(6,0.01,3));
 
     double arm1Offset = -100; // angle between maxEncoder position and ground
-    int maxEncoder1;
-    int maxEncoder2;
+    int maxEncoder1 = 800;
+    int maxEncoder2 = 2250;
+    int target1 = 0;
+    int target2 = 0;
+    double servopos1 = 0;
+    double servopos2 = 0;
+    double servoold1 = 0.01;
+    double servoold2 = 0.01;
+    double time = 4;
     double maxEnc1Angle;
     double maxEnc2Angle;
     Telemetry telemetry;
+    ElapsedTime runtime;
 
-    public Arm (HardwareMap map, Telemetry telemetry){
+    public Arm (HardwareMap map, Telemetry telemetry, ElapsedTime runtime){
+        this.runtime = runtime;
         this.telemetry = telemetry;
         arm1 = map.get(DcMotorEx.class, "arm1");
         arm2 = map.get(DcMotorEx.class, "arm2");
+        arm2.setDirection(DcMotorSimple.Direction.REVERSE);
         pot = map.get(AnalogInput.class, "pot");
         gripper = map.get(Servo.class, "gripper");
         pitch = map.get(Servo.class, "pitch");
         roll = map.get(Servo.class, "roll");
+
+        arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         arm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         arm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
     }
 
-    public void initLoop(ElapsedTime runtime) throws InterruptedException {
+    public void initLoop() throws InterruptedException {
 //        double t = runtime.seconds();
         double currentLimit = 4;
+        double currentLimitTop = 1;
         double velocity = 100;
-        telemetry.addData("arm1", arm1.getCurrent(CurrentUnit.AMPS));
-        telemetry.addData("arm2", arm2.getCurrent(CurrentUnit.AMPS) + " " + arm2.getVelocity());
-        if(j == 0)
-            if (arm1.getCurrent(CurrentUnit.AMPS) < currentLimit) {
-                arm1.setVelocity(-velocity);
-                return;
-            } else {
-                arm1.setVelocity(0);
-
-                arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                runtime.reset();
-                j++;
-            }
-
-        if(j==1)
-            if (arm1.getCurrent(CurrentUnit.AMPS) < currentLimit) {
-                arm1.setVelocity(velocity);
-                return;
-            } else {
-                arm1.setVelocity(0);
-                maxEncoder1 = arm1.getCurrentPosition();
-                if(runtime.seconds() > 2){
-                    j++;
-                    runtime.reset();
-                }
-
-            }
-
-//        if(j==2)
-//            if (arm2.getCurrent(CurrentUnit.AMPS) < currentLimit) {
+        telemetry.addData("arm1", arm1.getCurrentPosition());
+        telemetry.addData("arm2", arm2.getCurrentPosition());
+//        if(j == 0)
+//            if (arm1.getCurrent(CurrentUnit.AMPS) < currentLimit) {
+//                arm1.setVelocity(-velocity);
+//            } else {
+//                arm1.setVelocity(0);
+//                arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                j++;
+//            }
+//
+//        if(j==2){
+//            if (arm1.getCurrent(CurrentUnit.AMPS) < currentLimit) {
+//                arm1.setVelocity(velocity);
+//            } else {
+//                arm1.setVelocity(0);
+//                maxEncoder1 = arm1.getCurrentPosition();
+//                j++;
+//            }
+//            if (arm2.getCurrent(CurrentUnit.AMPS) < currentLimitTop) {
 //                arm2.setVelocity(-velocity);
-//                return;
 //            } else {
 //                arm2.setVelocity(0);
 //                arm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //                j++;
 //            }
+//        }
 //
-//        if(j==3)
-//            if (arm2.getCurrent(CurrentUnit.AMPS) < currentLimit) {
+//        if(j==1)
+//            if (arm2.getCurrent(CurrentUnit.AMPS) < currentLimitTop) {
 //                arm2.setVelocity(velocity);
-//                return;
+//
 //            } else {
 //                arm2.setVelocity(0);
 //                maxEncoder2 = arm2.getCurrentPosition();
@@ -104,21 +110,49 @@ public class Arm {
 
         maxEnc1Angle = ticksToAngle(maxEncoder1);
         maxEnc2Angle = ticksToAngle(maxEncoder2);
-        telemetry.addData("arm1 data", arm1.getCurrentPosition() + " " + maxEncoder1);
+//        telemetry.addData("arm1 data", arm1.getCurrentPosition() + " " + maxEncoder1);
     }
 
     public void move(Gamepad gamepad){
-        if(gamepad.a) toggleGripper();
+        if(gamepad.a) openGripper();
+        if(gamepad.b) closeGripper();
 
-        armX += gamepad.right_stick_y;
-        armY += gamepad.left_stick_y;
+        target1 += -gamepad.right_stick_y*2;
+        target2 += gamepad.left_stick_y*2;
+        goToServo(servopos1, servopos2, servoold1, servoold2);
+//        pitch.setPosition(gamepad.left_trigger);
+//        roll.setPosition(gamepad.right_trigger);
 
         if (gamepad.dpad_down) {
-            armY = 0.15;
-            armX = 0.7;
+//            armY = 0.15;
+//            armX = 0.7;
+            servopos1 = 0.3;
+            servopos2 = 0.01;
+            servoold1 = 0.7;
+            servoold2 = 1;
+            target1 = 100;
+            target2 = 1800;
+            time = 0.01;
+            runtime.reset();
+
         } else if (gamepad.dpad_up) {
-            armY = 0.7;
-            armX = 0.3;
+//            armY = 0.7;
+//            armX = 0.3;
+            servopos1 = 0.7;
+            servopos2 = 1;
+            servoold1 = 0.3;
+            servoold2 = 0.01;
+            time = 4;
+            pitch.setPosition(0.7);
+            roll.setPosition(1);
+
+            target1 = 140;
+            target2 = 600;
+            runtime.reset();
+
+
+            //140
+            //600
         } else if (gamepad.dpad_right) {
             armY = 0.5;
             armX = 0.5;
@@ -126,17 +160,30 @@ public class Arm {
             armY = 0.3;
             armX = 0.7;
         }
-        if(gamepad.right_bumper) armX *= -1;
-        move(armX, armY);
 
-        if (gamepad.left_bumper) {
+        arm1.setTargetPosition(target1);
+        arm2.setTargetPosition(target2);
+        arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm1.setPower(1);
+        arm2.setPower(1);
+        telemetry.addData("target1", target1);
+        telemetry.addData("target2", target2);
+        telemetry.addData("gripper", gripper.getPosition());
+        telemetry.addData("pitch", pitch.getPosition());
+        telemetry.addData("roll", roll.getPosition());
+
+//        if(gamepad.right_bumper) armX *= -1;
+//        move(armX, armY);
+
+//        if (gamepad.left_bumper) {
             // assuming 1 is FORWARD, 0 is BACKWARD
-            if (gripper.getDirection() == Servo.Direction.FORWARD) {
-                gripper.setDirection(Servo.Direction.REVERSE);
-            } else {
-                gripper.setDirection(Servo.Direction.FORWARD);
-            }
-        }
+//            if (gripper.getDirection() == Servo.Direction.FORWARD) {
+//                gripper.setDirection(Servo.Direction.REVERSE);
+//            } else {
+//                gripper.setDirection(Servo.Direction.FORWARD);
+//            }
+//        }
     }
 
     public void move(double x, double y) {
@@ -277,5 +324,14 @@ public class Arm {
 
     public double angleToVoltage(double a) {
         return (445.5*(a-270))/((a*a)-(270*a)-36450);
+    }
+
+    public void goToServo(double x, double y, double x2, double y2){
+        double gradient1 = (x-x2)/time;
+        double gradient2 = (y-y2)/time;
+        double newx = Range.clip((runtime.seconds()*gradient1)+x2, Math.min(x, x2), Math.max(x, x2));
+        double newy = Range.clip((runtime.seconds()*gradient2)+y2, Math.min(y, y2), Math.max(y, y2));
+        pitch.setPosition(newx);
+        roll.setPosition(newy);
     }
 }
