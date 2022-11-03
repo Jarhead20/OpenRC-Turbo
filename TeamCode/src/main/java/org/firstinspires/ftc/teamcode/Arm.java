@@ -32,7 +32,7 @@ public class Arm {
     private int j = 0;
     PIDFController armPID = new PIDFController(new PIDCoefficients(6,0.01,3));
 
-    double arm1Offset = -100; // angle between maxEncoder position and ground
+    double arm1Offset = 0; // angle between maxEncoder position and ground
     int maxEncoder1 = 800;
     int maxEncoder2 = 2250;
     int target1 = 0;
@@ -56,7 +56,6 @@ public class Arm {
         arm1 = map.get(DcMotorEx.class, "arm1");
         arm2 = map.get(DcMotorEx.class, "arm2");
         arm2.setDirection(DcMotor.Direction.REVERSE);
-        pot = map.get(AnalogInput.class, "pot");
         gripper = map.get(Servo.class, "gripper");
         pitch = map.get(Servo.class, "pitch");
         roll = map.get(Servo.class, "roll");
@@ -82,27 +81,27 @@ public class Arm {
         goToServo(servopos1, servopos2, servoold1, servoold2);
 
         if (gamepad.dpad_down) {
-//            armY = 0.15;
-//            armX = 0.7;
-            servopos1 = 0.3;
-            servopos2 = 0.01;
-            servoold1 = 0.7;
-            servoold2 = 1;
+            armY = 0.15;
+            armX = 0.7;
+            servoold1 = servopos1;
+            servoold2 = servopos2;
+            servopos1 = 0.7;
+            servopos2 = 0;
+
             target1 = 100;
             target2 = 1800;
             time = 0.01;
             runtime.reset();
 
         } else if (gamepad.dpad_up) {
-//            armY = 0.7;
-//            armX = 0.3;
-            servopos1 = 0.7;
+            armY = 0.7;
+            armX = 0.3;
+            servoold1 = servopos1;
+            servoold2 = servopos2;
+            servopos1 = 0.3;
             servopos2 = 1;
-            servoold1 = 0.3;
-            servoold2 = 0.01;
+
             time = 4;
-            pitch.setPosition(0.7);
-            roll.setPosition(1);
 
             target1 = 140;
             target2 = 600;
@@ -131,23 +130,23 @@ public class Arm {
         telemetry.addData("pitch", pitch.getPosition());
         telemetry.addData("roll", roll.getPosition());
 
-//        if(gamepad.right_bumper) armX *= -1;
+        if(gamepad.right_bumper) armX *= -1;
 //        move(armX, armY);
     }
 
     public void move(double x, double y) {
         double[] angles = inverseKinematics(x, y);
-        arm1.setTargetPosition((int) angles[0]);
-        arm2.setTargetPosition((int) angles[1]);
-        arm1.setPower(1);
-        arm2.setPower(1);
-        arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        arm2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        arm1.setTargetPosition((int) angles[0]);
+//        arm2.setTargetPosition((int) angles[1]);
 
+//        arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        arm2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        arm1.setPower(1);
+//        arm2.setPower(1);
         telemetry.addData("base target", angles[0] + " " + arm1Offset);
         telemetry.addData("top target", angles[1]);
-        pitch.setPosition(angles[2]);
-        roll.setPosition(angles[3]);
+//        pitch.setPosition(angles[2]);
+//        roll.setPosition(angles[3]);
         armPID.setTargetPosition(angleToVoltage(angles[0]));
     }
 
