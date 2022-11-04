@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -40,7 +41,6 @@ public class AutoRedLeft extends OpMode {
     // UNITS ARE METERS
     double tagsize = 0.166;
     int numFramesWithoutDetection = 0;
-    public int TSEPos = 3;
 
     final float DECIMATION_HIGH = 3;
     final float DECIMATION_LOW = 2;
@@ -50,21 +50,15 @@ public class AutoRedLeft extends OpMode {
     public SampleMecanumDrive drive;
     public Drive d;
 
-    Trajectory signalOne = drive.trajectoryBuilder(new Pose2d(0.00, 7, Math.toRadians(90.00)))
-            .splineTo(new Vector2d(-13.38, 34.38), Math.toRadians(171.87))
-            .build();
-    Trajectory signalTwo = drive.trajectoryBuilder(new Pose2d(-0.23, 7, Math.toRadians(90.00)))
-            .splineTo(new Vector2d(0.69, 34.62), Math.toRadians(88.99))
-            .build();
-    Trajectory signalThree = drive.trajectoryBuilder(new Pose2d(0.23, 7, Math.toRadians(90.00)))
-            .splineTo(new Vector2d(11.31, 35.08), Math.toRadians(-1.85))
-            .build();
+    Trajectory signalOne;
+    Trajectory signalTwo;
+    Trajectory signalThree;
 
     public enum AutoState {
         PARK_CV,
         PARK,
     }
-    AutoState autoState = AutoState.PARK;
+    AutoState autoState = AutoState.PARK_CV;
 
     public Pose2d startPose;
 
@@ -77,14 +71,14 @@ public class AutoRedLeft extends OpMode {
         timer.reset();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         drive = new SampleMecanumDrive(hardwareMap);
+        drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         d = new Drive(hardwareMap, telemetry);
 
-        startPose = new Pose2d(-60, -60, Math.toRadians(180));
+        startPose = new Pose2d(0, 0, Math.toRadians(-90));
 //        startPose = new Pose2d(-60, -60, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
-        doCV();
+//        doCV();
 
-        telemetry.addData("Realtime analysis", TSEPos);
 
         cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -103,11 +97,21 @@ public class AutoRedLeft extends OpMode {
 
             }
         });
+        signalOne = drive.trajectoryBuilder(new Pose2d(0.00, 7, Math.toRadians(90.00)))
+                .splineTo(new Vector2d(-13.38, 34.38), Math.toRadians(171.87))
+                .build();
+        signalTwo = drive.trajectoryBuilder(new Pose2d(-0.23, 7, Math.toRadians(90.00)))
+                .splineTo(new Vector2d(0.69, 34.62), Math.toRadians(88.99))
+                .build();
+        signalThree = drive.trajectoryBuilder(new Pose2d(0.23, 7, Math.toRadians(90.00)))
+                .splineTo(new Vector2d(11.31, 35.08), Math.toRadians(-1.85))
+                .build();
     }
 
     @Override
     public void loop() {
         ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
+        int detection = 0;
         switch (autoState) {
             case PARK_CV:
                 // If there's been a new frame...
@@ -129,104 +133,36 @@ public class AutoRedLeft extends OpMode {
                         // If the target is within 1 meter, turn on high decimation to
                         // increase the frame rate
                         if(detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
-                        for(AprilTagDetection detection : detections)
+                        for(AprilTagDetection detection2 : detections)
                         {
-                            switch(detection.id){
-                                case 10:
-                                    telemetry.addData("Signal", "1");
-                                    drive.followTrajectory(signalOne);
-                                    break;
-                                case 11:
-                                    telemetry.addData("Signal", "2");
-                                    drive.followTrajectory(signalTwo);
-                                    break;
-                                case 21:
-                                    telemetry.addData("Signal", "3");
-                                    drive.followTrajectory(signalTwo);
-                                    break;
-                            }
+                            detection = detection2.id;
+                            autoState = AutoState.PARK;
+                            telemetry.addData("Detection2", detection2.id);
                         }
                     }
                     telemetry.update();
-                    autoState = AutoState.PARK;
+
                 }
             case PARK:
                 break;
         }
+        telemetry.addData("detection", detection);
+        switch(detection){
+            case 10:
+                telemetry.addData("Signal", "1");
+                drive.followTrajectory(signalOne);
+                break;
+            case 11:
+                telemetry.addData("Signal", "2");
+                drive.followTrajectory(signalTwo);
+                break;
+            case 21:
+                telemetry.addData("Signal", "3");
+                drive.followTrajectory(signalThree);
+                break;
+        }
+        drive.update();
     }
-            //drive.followTrajectorySequence(duck1);
-
-//            switch (state){
-//                case START:
-//
-//
-//                    drive.followTrajectory(deposit);
-//                    break;
-//                case EXTEND:
-//                    switch(TSEPos){
-//                        case 1:
-//                            d.slideDrive.setTargetPosition(-3500);
-//                            d.slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//                            d.slideDrive.setPower(1);
-//                            if(d.slideDrive.getCurrentPosition() >= -3400)  {
-//                                d.ramp.setPosition(0.4);
-//                                d.servo.setPosition(0);
-//                            }
-//                            else {
-//                                d.ramp.setPosition(0.5);
-//                                d.servo.setPosition(0.5);
-//                            }
-//                            break;
-//                        case 2:
-//                            d.slideDrive.setTargetPosition(-3500);
-//                            d.slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//                            d.slideDrive.setPower(1);
-//                            if(d.slideDrive.getCurrentPosition() >= -3400)  {
-//                                d.ramp.setPosition(0.2);
-//                                d.servo.setPosition(0);
-//                            }
-//                            else {
-//                                d.ramp.setPosition(0.5);
-//                                d.servo.setPosition(0.5);
-//                            }
-//                            break;
-//                        case 3:
-//
-//                            d.slideDrive.setTargetPosition(-4400);
-//                            d.slideDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//                            d.slideDrive.setPower(1);
-//                            if(d.slideDrive.getCurrentPosition() <= -4300) {
-//                                d.ramp.setPosition(0.5);
-//                                d.servo.setPosition(0);
-//                            }
-//                            else if(d.slideDrive.getCurrentPosition() >= -400) d.servo.setPosition(0.5);
-//                            else {
-//                                d.ramp.setPosition(0.5);
-//                                d.servo.setPosition(0.5);
-//                            }
-//                            break;
-//                        default:
-//                            break;
-//                    }
-//
-//                    if(d.slideDrive.getCurrentPosition() >  d.slideDrive.getTargetPosition()-50 && d.slideDrive.getCurrentPosition() < d.slideDrive.getTargetPosition() + 50) {
-//                        timer.reset();
-//                        state = State.RETRACT;
-//                    }
-//                    break;
-//
-//                case RETRACT:
-//                    d.slideDrive.setTargetPosition(-1000);
-//    //                d.position = 4;
-//    //                if(d.slideDrive.getCurrentPosition() >  d.slideDrive.getTargetPosition()-50 && d.slideDrive.getCurrentPosition() < d.slideDrive.getTargetPosition() + 50)
-//    //                    drive.followTrajectorySequence(duck1);
-//                    break;
-//                default:
-//                    break;
-//            }
-
-
-        //d.slide(d.position);
 
     public void doCV(){
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
