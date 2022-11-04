@@ -14,7 +14,7 @@ public class ArmModel {
     private final int baseY = 0;
 
     //Start Angle in degrees
-    private final int forearmStartAngle = 0;
+    private final int forearmStartAngle = 10;
     private final int bicepStartAngle = 135;
 
     public int radiansToEncoder(double radians){
@@ -23,7 +23,7 @@ public class ArmModel {
 
         return ticks;
     }
-    public int[] calculateMotorPositions(int targetX, int targetY) {
+    public double[] calculateMotorPositions(int targetX, int targetY) {
         //Calculate distance to target
         double distance = Math.sqrt(Math.pow(targetX - baseX, 2) + Math.pow(targetY - baseY, 2));
         if(distance> bicepLength + forearmLength){
@@ -68,10 +68,10 @@ public class ArmModel {
             int lowerMotorPosition = radiansToEncoder(lowerMotorAngle);
 
             //Account for start angle
-            upperMotorPosition -= radiansToEncoder(Math.toRadians(bicepStartAngle));
-            lowerMotorPosition -= radiansToEncoder(Math.toRadians(forearmStartAngle));
+            upperMotorPosition += radiansToEncoder(Math.toRadians(bicepStartAngle));
+            lowerMotorPosition += radiansToEncoder(Math.toRadians(forearmStartAngle));
 
-            return new int[]{upperMotorPosition, lowerMotorPosition, (int) wristPitch, (int) wristRoll};
+            return new double[]{upperMotorPosition, lowerMotorPosition,  wristPitch, wristRoll};
         }
     }
 }
