@@ -27,8 +27,8 @@ public class Arm {
     private Servo pitch;
     private Servo roll;
     private AnalogInput pot;
-    private int armX = 0;
-    private int armY = 800;
+    private double armX = 0;
+    private double armY = 0;
     private int j = 0;
     PIDFController armPID = new PIDFController(new PIDCoefficients(6,0.01,3));
 
@@ -46,7 +46,8 @@ public class Arm {
     double maxEnc2Angle = maxEncoder2 / 8.88;
     double maxPitch = 270;
     double maxRoll = 270;
-    ArmModel armModel = new ArmModel();
+    double[] angles = new double[4];
+
     Telemetry telemetry;
     ElapsedTime runtime;
 
@@ -75,13 +76,13 @@ public class Arm {
         if(gamepad.a) openGripper();
         if(gamepad.b) closeGripper();
 
-        armX += -gamepad.right_stick_y*2;
-        armY += gamepad.left_stick_y*2;
-//        goToServo(servopos1, servopos2, servoold1, servoold2);
+        target1 += -gamepad.right_stick_y*2;
+        target2 += gamepad.left_stick_y*2;
+        goToServo(servopos1, servopos2, servoold1, servoold2);
 
         if (gamepad.dpad_down) {
-            armY = 30;
-            armX = 700;
+            armY = 0.15;
+            armX = 0.7;
             servoold1 = servopos1;
             servoold2 = servopos2;
             servopos1 = 0.7;
@@ -93,8 +94,8 @@ public class Arm {
             runtime.reset();
 
         } else if (gamepad.dpad_up) {
-            armY = 700;
-            armX = 30;
+            armY = 0.7;
+            armX = 0.3;
             servoold1 = servopos1;
             servoold2 = servopos2;
             servopos1 = 0.3;
@@ -110,35 +111,33 @@ public class Arm {
             //140
             //600
         } else if (gamepad.dpad_right) {
-            armY = 500;
-            armX = 500;
+            armY = 0.5;
+            armX = 0.5;
         } else if (gamepad.dpad_left) {
-            armY = 300;
-            armX = 700;
+            armY = 0.3;
+            armX = 0.7;
         }
 
-//        arm1.setTargetPosition(target1);
-//        arm2.setTargetPosition(target2);
-//        arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        arm2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        arm1.setPower(1);
-//        arm2.setPower(1);
-//        telemetry.addData("target1", target1);
-//        telemetry.addData("target2", target2);
-//        telemetry.addData("gripper", gripper.getPosition());
-//        telemetry.addData("pitch", pitch.getPosition());
-//        telemetry.addData("roll", roll.getPosition());
+        arm1.setTargetPosition(target1);
+        arm2.setTargetPosition(target2);
+        arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm1.setPower(1);
+        arm2.setPower(1);
+        telemetry.addData("target1", target1);
+        telemetry.addData("target2", target2);
+        telemetry.addData("gripper", gripper.getPosition());
+        telemetry.addData("pitch", pitch.getPosition());
+        telemetry.addData("roll", roll.getPosition());
 
         if(gamepad.right_bumper) armX *= -1;
-        move(armX, armY);
+//        move(armX, armY);
     }
 
-    public void move(int x, int y) {
+    public void move(double x, double y) {
         double[] angles = inverseKinematics(x, y);
-        arm1.setTargetPosition((int) angles[1]);
-        arm2.setTargetPosition((int) angles[0]);
-        telemetry.addData("lower", angles[1]);
-        telemetry.addData("upper", angles[0]);
+        arm1.setTargetPosition((int) angles[0]);
+        arm2.setTargetPosition((int) angles[1]);
         arm1.setPower(1);
         arm2.setPower(1);
         arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -146,8 +145,8 @@ public class Arm {
 
         telemetry.addData("base target", angles[0] + " " + arm1Offset);
         telemetry.addData("top target", angles[1]);
-//        pitch.setPosition(angles[2]);
-//        roll.setPosition(angles[3]);
+        pitch.setPosition(angles[2]);
+        roll.setPosition(angles[3]);
         armPID.setTargetPosition(angleToVoltage(angles[0]));
     }
 
@@ -155,8 +154,78 @@ public class Arm {
         arm1.setPower(armPID.update(pot.getVoltage()));
     }
 
-    public double[] inverseKinematics(int x, int y) {
-        double[] angles = armModel.calculateMotorPositions(x,y);
+    public boolean atTarget(){
+        double[] angles = inverseKinematics(armX, armY); // technically is now ticks not angles
+        double pV = pot.getVoltage();
+        double tV = angleToVoltage(angles[0]);
+        // the 2 numbers are the target tolerances
+        return (Math.abs(pV-tV) < voltageTolerance && Math.abs(arm2.getCurrentPosition() - arm1.getTargetPosition()) < encoderTolerance);
+    }
+
+    public double[] inverseKinematics(double x, double y) {
+        double currentArm1 = arm1.getCurrentPosition() * 8.88;
+
+        // basic ik for  form of the two arms
+        angles[1] = -Math.acos((Math.pow(x, 2) + Math.pow(y, 2) - (LINK1 * LINK1) - (LINK2 * LINK2)) / (2 * LINK1 * LINK2));
+        angles[0] = Math.atan((LINK2*Math.sin(angles[1]))/(LINK1 + LINK2*Math.cos(angles[1]))) + Math.atan(Math.abs(y/x));
+        angles[2] = maxPitch / 2;
+        angles[3] = maxRoll / 2;
+
+        // angle[0] is measured from the ground on right side
+        // angle[1] is measured from extension of link1
+        // makes angles make sense compared to encoders
+        angles[0] = Math.toDegrees(angles[0]);
+        angles[1] = Math.toDegrees(angles[1]);
+
+        angles[1] = Math.abs(angles[1]);
+
+        double angle1 = angles[0];
+        double angle2 = angles[1];
+
+        angles[0] = maxEnc1Angle - angles[0] + arm1Offset;
+        angles[1] = maxEnc2Angle / 2 + angles[1];
+
+        // pitch
+        double temp = (180 - angles[0] - arm1Offset - angles[1] + maxEnc2Angle / 2);
+        angles[2] = 180 - Math.abs(temp);
+
+        angles[2] /= maxPitch; // to convert to servo motor value
+
+        if (angles[0] > (maxEnc1Angle / 2)) {
+//            inverts pitch if on right side (since roll turns it upside down)
+            angles[2] = 1 - angles[2];
+        }
+
+        /* roll
+        assuming that view from left side is:
+        bigger encoder value
+              ___
+             /   \
+            |
+            \___/
+        smaller encoder value
+        rotates anti-clockwise when moving to right side
+         */
+        if ((currentArm1 > (maxEnc1Angle / 2)) && (x < 0)) {
+            // going right to left
+            angles[3] -= 180;
+        } else if ((currentArm1 < (maxEnc1Angle / 2)) && (x > 0)) {
+            // left to right
+            angles[3] += 180;
+        }
+        angles[3] = Math.abs(angles[3]) / maxRoll;
+
+        System.out.println("angle 1: " + angles[0]);
+        System.out.println("angle 2: " + angles[1]);
+
+        if (x > 0) {
+            angles[0] = (maxEnc1Angle - angle1);
+        } else {
+            angles[1] = (maxEnc2Angle - angle2);
+        }
+        angles[0] *= 8.88;
+        angles[1] *= 8.88;
+
         return angles;
     }
 

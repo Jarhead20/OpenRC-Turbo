@@ -22,7 +22,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import java.util.ArrayList;
 @Config
 @Autonomous(group = "drive")
-public class AutoRedLeft extends OpMode {
+public class AutoRedLeft extends LinearOpMode {
 
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
@@ -97,13 +97,13 @@ public class AutoRedLeft extends OpMode {
 
             }
         });
-        signalOne = drive.trajectoryBuilder(new Pose2d(0.00, 7, Math.toRadians(90.00)))
+        signalOne = drive.trajectoryBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
                 .splineTo(new Vector2d(-13.38, 34.38), Math.toRadians(171.87))
                 .build();
-        signalTwo = drive.trajectoryBuilder(new Pose2d(-0.23, 7, Math.toRadians(90.00)))
+        signalTwo = drive.trajectoryBuilder(new Pose2d(-0.23, 7, Math.toRadians(-90.00)))
                 .splineTo(new Vector2d(0.69, 34.62), Math.toRadians(88.99))
                 .build();
-        signalThree = drive.trajectoryBuilder(new Pose2d(0.23, 7, Math.toRadians(90.00)))
+        signalThree = drive.trajectoryBuilder(new Pose2d(0.23, 7, Math.toRadians(-90.00)))
                 .splineTo(new Vector2d(11.31, 35.08), Math.toRadians(-1.85))
                 .build();
     }
