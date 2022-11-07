@@ -29,30 +29,13 @@ public class Main extends OpMode
     private double currentTime;
     private Drive drive;
     private Arm arm;
-    private int total = 0;
-    private int total2 = 0;
-    private double speed = 0;
-
-    /* code to move the arm (once an object is collected) to its desired position (height of the
-    highest pole), then let go of the object and reset to Collection state
-    allow the driver to press button to stop machine and arm movement
-    simultaneously control the drive train
-    */
 
     @Override
     public void init() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         telemetry.addData("Status", "Initialized");
-//        arm1 = hardwareMap.get(DcMotorEx.class, "arm1");
-//        arm2 = hardwareMap.get(DcMotorEx.class, "arm2");
         drive = new Drive(hardwareMap,telemetry);
         arm = new Arm(hardwareMap, telemetry, runtime);
-//        arm1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        arm2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        arm1.setTargetPosition(0);
-//        arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        runtime.reset();
     }
 
     @Override
@@ -72,17 +55,11 @@ public class Main extends OpMode
 
     @Override
     public void loop() {
-        total += gamepad2.left_stick_y*2;
-        total2 += gamepad1.right_stick_y*2;
-
-//        arm1.setPower(gamepad2.left_stick_y);
-//        arm2.setPower(gamepad2.right_stick_y);
-
+        //use this on competition day
+        //if(runtime.seconds() >= 120) return;
         drive.setMultiplier(0.5);
         if (gamepad1.right_bumper)
             drive.setMultiplier(1);
-//        telemetry.addData(arm1.getTargetPosition() + " ",arm1.getCurrentPosition());
-//        telemetry.addData(arm2.getTargetPosition() + " ",arm2.getCurrentPosition());
         drive.mecanum(gamepad1);
 
         arm.move(gamepad2);
