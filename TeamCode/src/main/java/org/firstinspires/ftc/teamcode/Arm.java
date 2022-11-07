@@ -85,7 +85,7 @@ public class Arm {
             armX = 0.7;
             servoold1 = servopos1;
             servoold2 = servopos2;
-            servopos1 = 0.7;
+            servopos1 = 0.8;
             servopos2 = 0;
 
             target1 = 100;

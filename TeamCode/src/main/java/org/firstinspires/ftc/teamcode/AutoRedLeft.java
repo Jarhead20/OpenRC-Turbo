@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -50,9 +51,9 @@ public class AutoRedLeft extends LinearOpMode {
     public SampleMecanumDrive drive;
     public Drive d;
 
-    Trajectory signalOne;
-    Trajectory signalTwo;
-    Trajectory signalThree;
+    TrajectorySequence signalOne;
+    TrajectorySequence signalTwo;
+    TrajectorySequence signalThree;
 
     public enum AutoState {
         PARK_CV,
@@ -67,12 +68,10 @@ public class AutoRedLeft extends LinearOpMode {
     int cameraMonitorViewId;
 
     @Override
-    public void init() {
-        timer.reset();
+    public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         drive = new SampleMecanumDrive(hardwareMap);
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        d = new Drive(hardwareMap, telemetry);
 
         startPose = new Pose2d(0, 0, Math.toRadians(-90));
 //        startPose = new Pose2d(-60, -60, Math.toRadians(90));
@@ -97,85 +96,96 @@ public class AutoRedLeft extends LinearOpMode {
 
             }
         });
-        signalOne = drive.trajectoryBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
-                .splineTo(new Vector2d(-13.38, 34.38), Math.toRadians(171.87))
-                .build();
-        signalTwo = drive.trajectoryBuilder(new Pose2d(-0.23, 7, Math.toRadians(-90.00)))
-                .splineTo(new Vector2d(0.69, 34.62), Math.toRadians(88.99))
-                .build();
-        signalThree = drive.trajectoryBuilder(new Pose2d(0.23, 7, Math.toRadians(-90.00)))
-                .splineTo(new Vector2d(11.31, 35.08), Math.toRadians(-1.85))
-                .build();
-    }
+//        signalOne = drive.trajectoryBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
+//                .splineTo(new Vector2d(-13.38, 34.38), Math.toRadians(171.87))
+//                .build();
+//        signalTwo = drive.trajectoryBuilder(new Pose2d(-0.23, 0, Math.toRadians(-90.00)))
+//                .splineTo(new Vector2d(0.69, 34.62), Math.toRadians(88.99))
+//                .build();
+//        signalThree = drive.trajectoryBuilder(new Pose2d(0.23, 0, Math.toRadians(-90.00)))
+//                .splineTo(new Vector2d(11.31, 35.08), Math.toRadians(-1.85))
+//                .build();
 
-    @Override
-    public void loop() {
-        ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
-        int detection = 0;
-        switch (autoState) {
-            case PARK_CV:
-                // If there's been a new frame...
-                if(detections != null)
-                {
-                    telemetry.addData("FPS", camera.getFps());
-                    telemetry.addData("Overhead ms", camera.getOverheadTimeMs());
-                    telemetry.addData("Pipeline ms", camera.getPipelineTimeMs());
+        waitForStart();
+        telemetry.setMsTransmissionInterval(50);
+        while (opModeIsActive()) {
+            ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
+            int detection = 11;
+            switch (autoState) {
+                case PARK_CV:
+                    // If there's been a new frame...
+                    if (detections != null) {
+                        telemetry.addData("FPS", camera.getFps());
+                        telemetry.addData("Overhead ms", camera.getOverheadTimeMs());
+                        telemetry.addData("Pipeline ms", camera.getPipelineTimeMs());
 
-                    // If we don't see any tags
-                    if(detections.size() == 0)
-                    {
-                        numFramesWithoutDetection++;
-                        if(numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION) aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
-                    }
-                    else
-                    {
-                        numFramesWithoutDetection = 0;
-                        // If the target is within 1 meter, turn on high decimation to
-                        // increase the frame rate
-                        if(detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
-                        for(AprilTagDetection detection2 : detections)
-                        {
-                            detection = detection2.id;
-                            autoState = AutoState.PARK;
-                            telemetry.addData("Detection2", detection2.id);
+                        // If we don't see any tags
+                        if (detections.size() == 0) {
+                            numFramesWithoutDetection++;
+                            if (numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION)
+                                aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
+                        } else {
+                            numFramesWithoutDetection = 0;
+                            // If the target is within 1 meter, turn on high decimation to
+                            // increase the frame rate
+                            if (detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS)
+                                aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
+                            for (AprilTagDetection detection2 : detections) {
+                                detection = detection2.id;
+                                autoState = AutoState.PARK;
+                                telemetry.addData("Detection2", detection2.id);
+                                switch (detection) {
+                                    case 10:
+                                        telemetry.addData("Signal", "1");
+                                        signalOne = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
+//                                                .splineTo(new Vector2d(34.38,-24), Math.toRadians(90))
+//                                                .build();
+                                                .strafeLeft(30)
+//                                                .turn(Math.toRadians(-90))
+                                                .forward(12)
+                                                .build();
+                                        drive.followTrajectorySequence(signalOne);
+                                        autoState = AutoState.PARK;
+                                        break;
+                                    case 11:
+                                        telemetry.addData("Signal", "2");
+                                        signalTwo = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
+//                                                .splineTo(new Vector2d(34.62, 0), Math.toRadians(0))
+                                                .strafeLeft(30)
+//                                                .turn(Math.toRadians(-90))
+
+                                                .build();
+
+                                        drive.followTrajectorySequence(signalTwo);
+                                        autoState = AutoState.PARK;
+                                        break;
+                                    case 21:
+                                        telemetry.addData("Signal", "3");
+                                        signalThree = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
+//                                                .splineTo(new Vector2d(35.08,24), Math.toRadians(-90))
+//                                                .turn(Math.toRadians(90))
+                                                .strafeLeft(30)
+//                                                .turn(Math.toRadians(-90))
+                                                .back(12)
+                                                .build();
+
+                                        drive.followTrajectorySequence(signalThree);
+                                        autoState = AutoState.PARK;
+                                        break;
+                                }
+                            }
                         }
+                        sleep(20);
                     }
-                    telemetry.update();
+                    break;
+                case PARK:
+                    break;
+            }
+            telemetry.addData("detection", detection);
 
-                }
-            case PARK:
-                break;
+
+//            drive.update();
+            telemetry.update();
         }
-        telemetry.addData("detection", detection);
-        switch(detection){
-            case 10:
-                telemetry.addData("Signal", "1");
-                drive.followTrajectory(signalOne);
-                break;
-            case 11:
-                telemetry.addData("Signal", "2");
-                drive.followTrajectory(signalTwo);
-                break;
-            case 21:
-                telemetry.addData("Signal", "3");
-                drive.followTrajectory(signalThree);
-                break;
-        }
-        drive.update();
-    }
-
-    public void doCV(){
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
-
-        camera.setPipeline(aprilTagDetectionPipeline);
-        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
-            @Override
-            public void onOpened() { camera.startStreaming(1280,720, OpenCvCameraRotation.UPSIDE_DOWN); FtcDashboard.getInstance().startCameraStream(camera, 500); }
-            @Override
-            public void onError(int errorCode) {}
-        });
     }
 }
