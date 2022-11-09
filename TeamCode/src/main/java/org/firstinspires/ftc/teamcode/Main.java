@@ -4,22 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-import org.firstinspires.ftc.teamcode.Drive;
-import org.firstinspires.ftc.teamcode.Arm;
-
-import java.text.DecimalFormat;
-import java.util.concurrent.TimeUnit;
 
 //192.168.43.1:8080/dash
 @TeleOp(name="Main", group="Iterative OpMode")
@@ -62,7 +47,7 @@ public class Main extends OpMode
             drive.setMultiplier(1);
         drive.mecanum(gamepad1);
 
-        arm.move(gamepad2);
+        arm.inputGamepad(gamepad2);
     }
 
     @Override
