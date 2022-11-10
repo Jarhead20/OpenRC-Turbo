@@ -17,8 +17,8 @@ public class Arm {
     private Servo roll;
     private double armX = 0;
     private double armY = 0;
-    private double targetArmX = -150;
-    private double targetArmY = 700;
+    private double targetArmX = -130;
+    private double targetArmY = 300;
     private double targetShoulderAngle = 0;
     private double targetElbowAngle = 0;
     ArmModel model = new ArmModel();
@@ -37,22 +37,16 @@ public class Arm {
 
         shoulderMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         elbowMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        shoulderMotor.setTargetPosition(0);
-        elbowMotor.setTargetPosition(0);
-        elbowMotor.setPower(1);
-        shoulderMotor.setPower(1);
-        shoulderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     public void initLoop() throws InterruptedException {
-        return;
+        reportCurrentPosition();
     }
 
     public void inputGamepad(Gamepad gamepad){
         //Inverse Kinematics
-        targetArmX -= gamepad.left_stick_y*5;
-        targetArmY -= gamepad.right_stick_y*5;
+        targetArmX -= gamepad.left_stick_y*2;
+        targetArmY -= gamepad.right_stick_y*2;
 
         moveTo(targetArmX, targetArmY);
 
@@ -62,10 +56,19 @@ public class Arm {
 
     public void moveTo(double x, double y){
         double[] angles = model.calculateMotorPositions((int)x, (int)y);
-
-        targetShoulderAngle = model.radiansToEncoder(angles[0]);
-        targetElbowAngle = model.radiansToEncoder(angles[1]);
-
+        if (angles == null){
+            return;
+        }
+        targetShoulderAngle = angles[1];
+        targetElbowAngle = angles[0];
+        shoulderMotor.setTargetPosition((int)targetShoulderAngle);
+        elbowMotor.setTargetPosition((int)-targetElbowAngle);
+        elbowMotor.setPower(1);
+        shoulderMotor.setPower(1);
+        shoulderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        telemetry.addData("shoulder", targetShoulderAngle);
+        telemetry.addData("elbow", targetElbowAngle);
         pitch.setPosition(angles[2]);
         roll.setPosition(angles[3]);
     }
@@ -76,8 +79,9 @@ public class Arm {
         int[] armCoords = model.anglesToPosition(model.encoderToDegrees(shoulderRot) + 45, model.encoderToDegrees(elbowRot)+180);
         armX = armCoords[0];
         armY = armCoords[1];
-        telemetry.addData("shoulderRot", model.encoderToDegrees(shoulderMotor.getCurrentPosition())+45);
-        telemetry.addData("elbowRot", model.encoderToDegrees(elbowMotor.getCurrentPosition())+180);
+        telemetry.addData("shoulderRot", shoulderMotor.getCurrentPosition());
+        telemetry.addData("elbowRot", elbowMotor.getCurrentPosition());
+
         telemetry.addData("armX", armX);
         telemetry.addData("armY", armY);
         telemetry.addData("targetX", targetArmX);

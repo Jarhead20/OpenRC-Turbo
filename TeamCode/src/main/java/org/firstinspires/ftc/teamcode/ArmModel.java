@@ -26,7 +26,7 @@ public class ArmModel {
     public double[] calculateMotorPositions(int targetX, int targetY) {
         //Calculate distance to target
         double distance = Math.sqrt(Math.pow(targetX - baseX, 2) + Math.pow(targetY - baseY, 2));
-        if(distance> bicepLength + forearmLength){
+        if(distance> (bicepLength + forearmLength)){
             return null;
         }
         else{
@@ -62,12 +62,11 @@ public class ArmModel {
 
             //calculate target encoder position
             //First convert to revolutions
+            upperMotorAngle -= Math.toRadians(forearmStartAngle);
+            lowerMotorAngle -= Math.toRadians(bicepStartAngle);
+
             int upperMotorPosition = radiansToEncoder(upperMotorAngle);
             int lowerMotorPosition = radiansToEncoder(lowerMotorAngle);
-
-            //Account for start angle
-            upperMotorPosition -= radiansToEncoder(Math.toRadians(bicepStartAngle));
-            lowerMotorPosition -= radiansToEncoder(Math.toRadians(forearmStartAngle));
 
             return new double[]{upperMotorPosition, lowerMotorPosition,  wristPitch, wristRoll};
         }
