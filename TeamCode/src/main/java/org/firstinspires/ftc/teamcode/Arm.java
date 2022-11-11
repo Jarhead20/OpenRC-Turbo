@@ -55,12 +55,17 @@ public class Arm {
     }
 
     public void moveTo(double x, double y){
+        //TODO: Add Range of Motion Constraints
+
         double[] angles = model.calculateMotorPositions((int)x, (int)y);
         if (angles == null){
             return;
         }
+        if (angles[1] < 0){
+            return;
+        }
         targetShoulderAngle = angles[1];
-        targetElbowAngle = angles[0];
+        targetElbowAngle = -angles[0];
         shoulderMotor.setTargetPosition((int)targetShoulderAngle);
         elbowMotor.setTargetPosition((int)-targetElbowAngle);
         elbowMotor.setPower(1);

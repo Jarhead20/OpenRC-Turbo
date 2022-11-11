@@ -17,6 +17,9 @@ public class ArmModel {
     private final int forearmStartAngle = 180;
     private final int bicepStartAngle = 45;
 
+    //Joint Limits
+    private final int minInnerElbowAngle = 30;
+
     public int radiansToEncoder(double radians){
         double revolutions = radians / (2 * Math.PI);
         int ticks = (int) (revolutions * ticksPerRevolution * gearRatio);
