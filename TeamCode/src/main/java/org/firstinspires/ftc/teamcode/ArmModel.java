@@ -2,20 +2,23 @@ package org.firstinspires.ftc.teamcode;
 
 public class ArmModel {
     //Distances all in mm
-    private final double bicepLength = 400;
-    private final double forearmLength = 420;
+    private final double bicepLength = 420;
+    private final double forearmLength = 430;
 
     //Information About motor
     private final int ticksPerRevolution = 1440;
-    private final double gearRatio = (40.0/18);
+    private final double gearRatio = (40.0/18.0);
 
     //Coordinates of the base
     private final int baseX = 0;
     private final int baseY = 0;
 
     //Start Angle in degrees
-    private final int forearmStartAngle = 10;
-    private final int bicepStartAngle = 135;
+    private final int forearmStartAngle = 180;
+    private final int bicepStartAngle = 45;
+
+    //Joint Limits
+    private final int minInnerElbowAngle = 30;
 
     public int radiansToEncoder(double radians){
         double revolutions = radians / (2 * Math.PI);
@@ -26,7 +29,7 @@ public class ArmModel {
     public double[] calculateMotorPositions(int targetX, int targetY) {
         //Calculate distance to target
         double distance = Math.sqrt(Math.pow(targetX - baseX, 2) + Math.pow(targetY - baseY, 2));
-        if(distance> bicepLength + forearmLength){
+        if(distance> (bicepLength + forearmLength)){
             return null;
         }
         else{
@@ -47,7 +50,7 @@ public class ArmModel {
                 //Calculate upper motor angle
                 upperMotorAngle = Math.PI - innerElbowAngle + lowerMotorAngle;
                 //Calculate wrist pitch (0-1)
-                wristPitch = (Math.PI - innerElbowAngle) / Math.PI;
+                wristPitch = map(upperMotorAngle, Math.PI/2, 3*Math.PI/2, 0, 1);
 
             }
             else {
@@ -57,21 +60,33 @@ public class ArmModel {
                 //Calculate upper motor angle
                 upperMotorAngle = Math.PI - (Math.PI - innerElbowAngle) - (Math.PI - lowerMotorAngle);
                 //Calculate wrist pitch (0-1)
-                wristPitch = (Math.PI - innerElbowAngle) / Math.PI;
+                wristPitch = map(upperMotorAngle, 3*Math.PI/2, Math.PI/2, 0, 1);
             }
-            System.out.println("Upper motor angle" + Math.toDegrees(upperMotorAngle));
-            System.out.println("Lower motor angle" + Math.toDegrees(lowerMotorAngle));
 
             //calculate target encoder position
             //First convert to revolutions
+            upperMotorAngle -= Math.toRadians(forearmStartAngle);
+            lowerMotorAngle -= Math.toRadians(bicepStartAngle);
+
             int upperMotorPosition = radiansToEncoder(upperMotorAngle);
             int lowerMotorPosition = radiansToEncoder(lowerMotorAngle);
 
-            //Account for start angle
-            upperMotorPosition += radiansToEncoder(Math.toRadians(bicepStartAngle));
-            lowerMotorPosition += radiansToEncoder(Math.toRadians(forearmStartAngle));
-
             return new double[]{upperMotorPosition, lowerMotorPosition,  wristPitch, wristRoll};
         }
+    }
+
+    public float encoderToDegrees(int encoder){
+        return (float) (encoder * (360.0 / ticksPerRevolution) / gearRatio);
+    }
+    public double map(double x, double in_min, double in_max, double out_min, double out_max) {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
+    public int[] anglesToPosition(float ShoulderRot, float ElbowRot){
+        //Using forward-kinematics, the position can be calculated
+        int elbowX = (int) (bicepLength * Math.cos(Math.toRadians(ShoulderRot)));
+        int elbowY = (int) (bicepLength * Math.sin(Math.toRadians(ShoulderRot)));
+        int wristX = (int) (elbowX + forearmLength * Math.cos(Math.toRadians(ElbowRot)));
+        int wristY = (int) (elbowY + forearmLength * Math.sin(Math.toRadians(ElbowRot)));
+        return new int[]{wristX, wristY};
     }
 }
