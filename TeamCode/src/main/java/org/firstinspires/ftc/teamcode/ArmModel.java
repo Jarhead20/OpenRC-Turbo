@@ -50,7 +50,7 @@ public class ArmModel {
                 //Calculate upper motor angle
                 upperMotorAngle = Math.PI - innerElbowAngle + lowerMotorAngle;
                 //Calculate wrist pitch (0-1)
-                wristPitch = (Math.PI - innerElbowAngle) / Math.PI;
+                wristPitch = map(upperMotorAngle, Math.PI/2, 3*Math.PI/2, 0, 1);
 
             }
             else {
@@ -60,7 +60,7 @@ public class ArmModel {
                 //Calculate upper motor angle
                 upperMotorAngle = Math.PI - (Math.PI - innerElbowAngle) - (Math.PI - lowerMotorAngle);
                 //Calculate wrist pitch (0-1)
-                wristPitch = (Math.PI - innerElbowAngle) / Math.PI;
+                wristPitch = map(upperMotorAngle, 3*Math.PI/2, Math.PI/2, 0, 1);
             }
 
             //calculate target encoder position
@@ -78,7 +78,9 @@ public class ArmModel {
     public float encoderToDegrees(int encoder){
         return (float) (encoder * (360.0 / ticksPerRevolution) / gearRatio);
     }
-
+    public double map(double x, double in_min, double in_max, double out_min, double out_max) {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
     public int[] anglesToPosition(float ShoulderRot, float ElbowRot){
         //Using forward-kinematics, the position can be calculated
         int elbowX = (int) (bicepLength * Math.cos(Math.toRadians(ShoulderRot)));

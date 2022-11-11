@@ -45,8 +45,8 @@ public class Arm {
 
     public void inputGamepad(Gamepad gamepad){
         //Inverse Kinematics
-        targetArmX -= gamepad.left_stick_y*2;
-        targetArmY -= gamepad.right_stick_y*2;
+        targetArmX += gamepad.left_stick_y*4;
+        targetArmY -= gamepad.right_stick_y*4;
 
         moveTo(targetArmX, targetArmY);
 
