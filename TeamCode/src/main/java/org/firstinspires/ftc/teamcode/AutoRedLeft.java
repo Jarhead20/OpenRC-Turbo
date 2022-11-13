@@ -51,9 +51,9 @@ public class AutoRedLeft extends LinearOpMode {
     public SampleMecanumDrive drive;
     public Drive d;
 
-    TrajectorySequence signalOne;
-    TrajectorySequence signalTwo;
-    TrajectorySequence signalThree;
+    Trajectory signalOne;
+    Trajectory signalTwo;
+    Trajectory signalThree;
 
     public enum AutoState {
         PARK_CV,
@@ -108,7 +108,8 @@ public class AutoRedLeft extends LinearOpMode {
 
         waitForStart();
         telemetry.setMsTransmissionInterval(50);
-        while (opModeIsActive()) {
+        while (opModeIsActive() && timer.time() < 30) {
+            if(isStopRequested()) return;
             ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
             int detection = 11;
             switch (autoState) {
@@ -137,39 +138,59 @@ public class AutoRedLeft extends LinearOpMode {
                                 switch (detection) {
                                     case 10:
                                         telemetry.addData("Signal", "1");
-                                        signalOne = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
-//                                                .splineTo(new Vector2d(34.38,-24), Math.toRadians(90))
+//                                        signalOne = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
+////                                                .splineTo(new Vector2d(34.38,-24), Math.toRadians(90))
+////                                                .build();
+//                                                .strafeLeft(30)
+////                                                .turn(Math.toRadians(-90))
+//                                                .back(24)
+//                                                .turn(Math.toRadians(90))
+//                                                .forward(10)
 //                                                .build();
-                                                .strafeLeft(30)
-//                                                .turn(Math.toRadians(-90))
-                                                .forward(12)
+                                        signalOne = drive.trajectoryBuilder(new Pose2d(0.00, -0.00, Math.toRadians(1.97)))
+                                                .splineTo(new Vector2d(30.98, 8.74), Math.toRadians(89.08))
+                                                .splineTo(new Vector2d(38.49, 21.74), Math.toRadians(-6.71))
                                                 .build();
-                                        drive.followTrajectorySequence(signalOne);
+                                        drive.followTrajectory(signalOne);
                                         autoState = AutoState.PARK;
                                         break;
                                     case 11:
                                         telemetry.addData("Signal", "2");
-                                        signalTwo = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
-//                                                .splineTo(new Vector2d(34.62, 0), Math.toRadians(0))
-                                                .strafeLeft(30)
-//                                                .turn(Math.toRadians(-90))
+//                                        signalTwo = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
+////                                                .splineTo(new Vector2d(34.62, 0), Math.toRadians(0))
+//                                                .strafeLeft(30)
+////                                                .turn(Math.toRadians(-90))
+//                                                .turn(Math.toRadians(90))
+//                                                .forward(10)
+//                                                .build();
 
+                                        signalTwo = drive.trajectoryBuilder(new Pose2d(-0.07, 0.22, Math.toRadians(-0.50)))
+                                                .splineTo(new Vector2d(40.00, -0.00), Math.toRadians(6.01))
                                                 .build();
 
-                                        drive.followTrajectorySequence(signalTwo);
+                                        drive.followTrajectory(signalTwo);
                                         autoState = AutoState.PARK;
                                         break;
                                     case 21:
                                         telemetry.addData("Signal", "3");
-                                        signalThree = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
-//                                                .splineTo(new Vector2d(35.08,24), Math.toRadians(-90))
+//                                        signalThree = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
+////                                                .splineTo(new Vector2d(35.08,24), Math.toRadians(-90))
+////                                                .turn(Math.toRadians(90))
+//                                                .strafeLeft(30)
+////                                                .turn(Math.toRadians(-90))
+//                                                .forward(24)
 //                                                .turn(Math.toRadians(90))
-                                                .strafeLeft(30)
-//                                                .turn(Math.toRadians(-90))
-                                                .back(12)
+//                                                .forward(10)
+//                                                .build();
+
+                                        signalThree = drive.trajectoryBuilder(new Pose2d(-0.07, 0.36, Math.toRadians(0.87)))
+                                                .splineTo(new Vector2d(25.78, -0.07), Math.toRadians(2.86))
+                                                .splineTo(new Vector2d(31.41, -16.97), Math.toRadians(270.00))
+                                                .splineTo(new Vector2d(43.55, -21.88), Math.toRadians(8.62))
                                                 .build();
 
-                                        drive.followTrajectorySequence(signalThree);
+
+                                        drive.followTrajectory(signalThree);
                                         autoState = AutoState.PARK;
                                         break;
                                 }
@@ -185,6 +206,7 @@ public class AutoRedLeft extends LinearOpMode {
 
 
 //            drive.update();
+            telemetry.addData("etime", timer.time());
             telemetry.update();
         }
     }
