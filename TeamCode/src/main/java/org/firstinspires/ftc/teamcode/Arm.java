@@ -19,9 +19,12 @@ public class Arm {
     private double armY = 0;
     private double targetArmX = -130;
     private double targetArmY = 300;
+    private double targetLoadX = 500;
+    private double targetLoadY = 100;
     private double targetShoulderAngle = 0;
     private double targetElbowAngle = 0;
     ArmModel model = new ArmModel();
+    private boolean unloadPos = true;
 
     Telemetry telemetry;
     ElapsedTime runtime;
@@ -44,11 +47,35 @@ public class Arm {
     }
 
     public void inputGamepad(Gamepad gamepad){
-        //Inverse Kinematics
-        targetArmX += gamepad.left_stick_y*4;
-        targetArmY -= gamepad.right_stick_y*4;
 
-        moveTo(targetArmX, targetArmY);
+        if (gamepad.a){
+            telemetry.addData("test", "test");
+            openGripper();
+        }
+        if (gamepad.b){
+            closeGripper();
+        }
+
+        if (gamepad.dpad_up){
+            unloadPos = true;
+        }
+        if (gamepad.dpad_down){
+            unloadPos = false;
+        }
+        if (unloadPos){
+            targetArmX += gamepad.left_stick_y*4;
+            targetArmY -= gamepad.right_stick_y*4;
+            Range.clip(targetArmX, -900, -1);
+            moveTo(targetArmX, targetArmY);
+        }
+        else{
+            targetLoadX += gamepad.left_stick_y*4;
+            targetLoadY -= gamepad.right_stick_y*4;
+            Range.clip(targetArmX, 1, 900);
+            moveTo(targetLoadX, targetLoadY);
+        }
+        //Inverse Kinematics
+
 
         //Forward Kinematics
         reportCurrentPosition();
@@ -75,6 +102,7 @@ public class Arm {
         telemetry.addData("shoulder", targetShoulderAngle);
         telemetry.addData("elbow", targetElbowAngle);
         pitch.setPosition(angles[2]);
+        telemetry.addData("Pitch", angles[2]);
         roll.setPosition(angles[3]);
     }
 
