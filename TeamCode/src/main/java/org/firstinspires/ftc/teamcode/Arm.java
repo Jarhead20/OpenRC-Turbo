@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class Arm {
     private DcMotorEx shoulderMotor;
@@ -97,6 +98,9 @@ public class Arm {
         elbowMotor.setTargetPosition((int)-targetElbowAngle);
         elbowMotor.setPower(1);
         shoulderMotor.setPower(1);
+        telemetry.addData("elbow velo", elbowMotor.getVelocity(AngleUnit.DEGREES));
+        telemetry.addData("elbow PIDF", elbowMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION)); // P: 10.00, I:0.05, D: 0.00, F: 0.00
+        elbowMotor.setPositionPIDFCoefficients((double) 12); // original is 10
         shoulderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         telemetry.addData("shoulder", targetShoulderAngle);
