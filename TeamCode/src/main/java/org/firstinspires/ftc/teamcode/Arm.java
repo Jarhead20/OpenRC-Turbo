@@ -3,6 +3,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -41,6 +42,7 @@ public class Arm {
 
         shoulderMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         elbowMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        elbowMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void initLoop() throws InterruptedException {
@@ -99,8 +101,12 @@ public class Arm {
         elbowMotor.setPower(1);
         shoulderMotor.setPower(1);
         telemetry.addData("elbow velo", elbowMotor.getVelocity(AngleUnit.DEGREES));
-        telemetry.addData("elbow PIDF", elbowMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION)); // P: 10.00, I:0.05, D: 0.00, F: 0.00
-        elbowMotor.setPositionPIDFCoefficients((double) 12); // original is 10
+        telemetry.addData("elbow PIDF", elbowMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_WITHOUT_ENCODER)); // P: 10.00, I:0.05, D: 0.00, F: 0.00
+//        elbowMotor.setPositionPIDFCoefficients(100);
+//        elbowMotor.setVelocityPIDFCoefficients(100, 0.05, 0, 0);
+        // 0.01 = slow
+        // 10 = normal
+
         shoulderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         telemetry.addData("shoulder", targetShoulderAngle);
