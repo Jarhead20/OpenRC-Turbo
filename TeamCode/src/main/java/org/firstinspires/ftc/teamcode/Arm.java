@@ -3,11 +3,13 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class Arm {
     private DcMotorEx shoulderMotor;
@@ -19,9 +21,12 @@ public class Arm {
     private double armY = 0;
     private double targetArmX = -130;
     private double targetArmY = 300;
+    private double targetLoadX = 500;
+    private double targetLoadY = 100;
     private double targetShoulderAngle = 0;
     private double targetElbowAngle = 0;
     ArmModel model = new ArmModel();
+    private boolean unloadPos = true;
 
     Telemetry telemetry;
     ElapsedTime runtime;
@@ -37,6 +42,7 @@ public class Arm {
 
         shoulderMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         elbowMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        elbowMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void initLoop() throws InterruptedException {
@@ -44,11 +50,35 @@ public class Arm {
     }
 
     public void inputGamepad(Gamepad gamepad){
-        //Inverse Kinematics
-        targetArmX += gamepad.left_stick_y*4;
-        targetArmY -= gamepad.right_stick_y*4;
 
-        moveTo(targetArmX, targetArmY);
+        if (gamepad.a){
+            telemetry.addData("test", "test");
+            openGripper();
+        }
+        if (gamepad.b){
+            closeGripper();
+        }
+
+        if (gamepad.dpad_up){
+            unloadPos = true;
+        }
+        if (gamepad.dpad_down){
+            unloadPos = false;
+        }
+        if (unloadPos){
+            targetArmX += gamepad.left_stick_y*4;
+            targetArmY -= gamepad.right_stick_y*4;
+            Range.clip(targetArmX, -900, -1);
+            moveTo(targetArmX, targetArmY);
+        }
+        else{
+            targetLoadX += gamepad.left_stick_y*4;
+            targetLoadY -= gamepad.right_stick_y*4;
+            Range.clip(targetArmX, 1, 900);
+            moveTo(targetLoadX, targetLoadY);
+        }
+        //Inverse Kinematics
+
 
         //Forward Kinematics
         reportCurrentPosition();
@@ -70,11 +100,19 @@ public class Arm {
         elbowMotor.setTargetPosition((int)-targetElbowAngle);
         elbowMotor.setPower(1);
         shoulderMotor.setPower(1);
+        telemetry.addData("elbow velo", elbowMotor.getVelocity(AngleUnit.DEGREES));
+        telemetry.addData("elbow PIDF", elbowMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_WITHOUT_ENCODER)); // P: 10.00, I:0.05, D: 0.00, F: 0.00
+//        elbowMotor.setPositionPIDFCoefficients(100);
+//        elbowMotor.setVelocityPIDFCoefficients(100, 0.05, 0, 0);
+        // 0.01 = slow
+        // 10 = normal
+
         shoulderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         telemetry.addData("shoulder", targetShoulderAngle);
         telemetry.addData("elbow", targetElbowAngle);
         pitch.setPosition(angles[2]);
+        telemetry.addData("Pitch", angles[2]);
         roll.setPosition(angles[3]);
     }
 
