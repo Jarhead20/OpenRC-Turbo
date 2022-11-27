@@ -53,7 +53,7 @@ public class ArmModel {
                 //Calculate upper motor angle
                 upperMotorAngle = Math.PI - innerElbowAngle + lowerMotorAngle;
                 //Calculate wrist pitch (0-1)
-                wristPitch = map(upperMotorAngle, Math.PI/4, 3*Math.PI/2, 0, 1) + 0.1;
+                wristPitch = map(upperMotorAngle, Math.PI/4, 3*Math.PI/2, 0, 1) - 0.1;
 
             }
             else {
@@ -63,7 +63,7 @@ public class ArmModel {
                 //Calculate upper motor angle
                 upperMotorAngle = Math.PI - (Math.PI - innerElbowAngle) - (Math.PI - lowerMotorAngle);
                 //Calculate wrist pitch (0-1)
-                wristPitch = 1-map(upperMotorAngle, -3*Math.PI/4, Math.PI, 0, 1);
+                wristPitch = 1-map(upperMotorAngle, -3*Math.PI/4, Math.PI, 0, 1) + 0.05;
             }
 
             //calculate target encoder position

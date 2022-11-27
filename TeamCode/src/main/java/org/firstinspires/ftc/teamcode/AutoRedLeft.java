@@ -111,7 +111,7 @@ public class AutoRedLeft extends LinearOpMode {
         while (opModeIsActive() && timer.time() < 30) {
             if(isStopRequested()) return;
             ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
-            int detection = 11;
+            int detection = 0;
             switch (autoState) {
                 case PARK_CV:
                     // If there's been a new frame...

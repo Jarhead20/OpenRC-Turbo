@@ -51,6 +51,7 @@ public class Main extends OpMode
     public void loop() {
         //use this on competition day
         //if(runtime.seconds() >= 120) return;
+        arm.inputGamepad(gamepad2);
         if (gamepad1.right_bumper) drive.setMotorMultiplier(1);
         else drive.setMotorMultiplier(0.5);
 
@@ -64,7 +65,7 @@ public class Main extends OpMode
 
         drive.update();
 
-        arm.inputGamepad(gamepad2);
+
     }
 
     @Override

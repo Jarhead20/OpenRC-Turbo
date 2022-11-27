@@ -19,10 +19,10 @@ public class Arm {
     private Servo roll;
     private double armX = 0;
     private double armY = 0;
-    private double targetArmX = -130;
-    private double targetArmY = 300;
-    private double targetLoadX = 500;
-    private double targetLoadY = 100;
+    private double targetArmX = -750; // -430
+    private double targetArmY = 30; // 100
+    private double targetLoadX = 460; // 200
+    private double targetLoadY = 700; // 300
     private double targetShoulderAngle = 0;
     private double targetElbowAngle = 0;
     ArmModel model = new ArmModel();
@@ -51,21 +51,21 @@ public class Arm {
 
     public void inputGamepad(Gamepad gamepad){
 
-        if (gamepad.a){
-            telemetry.addData("test", "test");
+        if (gamepad.b){
             openGripper();
         }
-        if (gamepad.b){
+        if (gamepad.a){
             closeGripper();
         }
 
         if (gamepad.dpad_up){
             unloadPos = true;
+            closeGripper();
         }
         if (gamepad.dpad_down){
             unloadPos = false;
         }
-        if (unloadPos){
+        if (!unloadPos){
             targetArmX += gamepad.left_stick_y*4;
             targetArmY -= gamepad.right_stick_y*4;
             Range.clip(targetArmX, -900, -1);
@@ -101,7 +101,7 @@ public class Arm {
         elbowMotor.setPower(1);
         shoulderMotor.setPower(1);
         telemetry.addData("elbow velo", elbowMotor.getVelocity(AngleUnit.DEGREES));
-        telemetry.addData("elbow PIDF", elbowMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_WITHOUT_ENCODER)); // P: 10.00, I:0.05, D: 0.00, F: 0.00
+//        telemetry.addData("elbow PIDF", elbowMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_WITHOUT_ENCODER)); // P: 10.00, I:0.05, D: 0.00, F: 0.00
 //        elbowMotor.setPositionPIDFCoefficients(100);
 //        elbowMotor.setVelocityPIDFCoefficients(100, 0.05, 0, 0);
         // 0.01 = slow
@@ -111,7 +111,7 @@ public class Arm {
         elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         telemetry.addData("shoulder", targetShoulderAngle);
         telemetry.addData("elbow", targetElbowAngle);
-        pitch.setPosition(angles[2]);
+        pitch.setPosition(1-angles[2]);
         telemetry.addData("Pitch", angles[2]);
         roll.setPosition(angles[3]);
     }
@@ -132,11 +132,11 @@ public class Arm {
     }
 
     public void closeGripper(){
-        gripper.setPosition(0);
+        gripper.setPosition(1.0);
     }
 
     public void openGripper(){
-        gripper.setPosition(1.0);
+        gripper.setPosition(0);
     }
 
     public void toggleGripper(){
