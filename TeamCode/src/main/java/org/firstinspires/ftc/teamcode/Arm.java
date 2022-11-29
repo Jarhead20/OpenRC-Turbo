@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -25,6 +26,7 @@ public class Arm {
     private double targetLoadY = 700; // 300
     private double targetShoulderAngle = 0;
     private double targetElbowAngle = 0;
+    private com.arcrobotics.ftclib.controller.PIDFController controller = new com.arcrobotics.ftclib.controller.PIDFController(2,0,0,0);
     ArmModel model = new ArmModel();
     private boolean unloadPos = true;
 
@@ -41,8 +43,12 @@ public class Arm {
         roll = map.get(Servo.class, "roll");
 
         shoulderMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        shoulderMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         elbowMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        elbowMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        elbowMotor.setDirection(DcMotorEx.Direction.REVERSE);
         elbowMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        shoulderMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void initLoop() throws InterruptedException {
@@ -95,11 +101,13 @@ public class Arm {
             return;
         }
         targetShoulderAngle = angles[1];
-        targetElbowAngle = -angles[0];
+        targetElbowAngle = angles[0];
         shoulderMotor.setTargetPosition((int)targetShoulderAngle);
-        elbowMotor.setTargetPosition((int)-targetElbowAngle);
-        elbowMotor.setPower(1);
+        elbowMotor.setTargetPosition((int)targetElbowAngle);
+//        update(elbowMotor, targetElbowAngle);
+        telemetry.addData("elbow pos", elbowMotor.getCurrentPosition());
         shoulderMotor.setPower(1);
+        elbowMotor.setPower(1);
         telemetry.addData("elbow velo", elbowMotor.getVelocity(AngleUnit.DEGREES));
 //        telemetry.addData("elbow PIDF", elbowMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_WITHOUT_ENCODER)); // P: 10.00, I:0.05, D: 0.00, F: 0.00
 //        elbowMotor.setPositionPIDFCoefficients(100);
@@ -107,8 +115,8 @@ public class Arm {
         // 0.01 = slow
         // 10 = normal
 
-        shoulderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        shoulderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         telemetry.addData("shoulder", targetShoulderAngle);
         telemetry.addData("elbow", targetElbowAngle);
         pitch.setPosition(1-angles[2]);
@@ -150,5 +158,11 @@ public class Arm {
         double newy = Range.clip((runtime.seconds()*gradient2)+y2, Math.min(y, y2), Math.max(y, y2));
         pitch.setPosition(newx);
         roll.setPosition(newy);
+    }
+
+    public void update(DcMotor motor, double position){
+        double power = controller.calculate(motor.getCurrentPosition(),position);
+        telemetry.addData("elbow power", power/10000.0);
+        motor.setPower(power/10000);
     }
 }

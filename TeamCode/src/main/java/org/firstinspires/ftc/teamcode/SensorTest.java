@@ -34,14 +34,13 @@ public class SensorTest extends OpMode
     @Override
     public void init() {
         telemetry.addData("Status", "Initialized");
-        motor = hardwareMap.get(DcMotor.class, "left_drive");
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        sensor = hardwareMap.get(TouchSensor.class, "touch");
-        mag = hardwareMap.get(TouchSensor.class, "mag");
-        distance = hardwareMap.get(DistanceSensor.class, "distance");
-        color = hardwareMap.get(ColorSensor.class, "color");
-        blinker = hardwareMap.get(RevBlinkinLedDriver.class, "blink");
-        pattern = RevBlinkinLedDriver.BlinkinPattern.AQUA;
+
+//        sensor = hardwareMap.get(TouchSensor.class, "touch");
+//        mag = hardwareMap.get(TouchSensor.class, "mag");
+//        distance = hardwareMap.get(DistanceSensor.class, "distance");
+//        color = hardwareMap.get(ColorSensor.class, "color");
+        blinker = hardwareMap.get(RevBlinkinLedDriver.class, "led");
+        pattern = RevBlinkinLedDriver.BlinkinPattern.COLOR_WAVES_RAINBOW_PALETTE;
     }
 
     @Override
@@ -56,13 +55,14 @@ public class SensorTest extends OpMode
 
     @Override
     public void loop() {
+
         blinker.setPattern(pattern);
-        telemetry.addData("b", distance.getDistance(DistanceUnit.CM));
-        telemetry.addData("e", sensor.isPressed());
-        telemetry.addData("a", mag.isPressed());
-        telemetry.addData("c",color.argb());
-        if(sensor.isPressed() || mag.isPressed()) motor.setPower(1);
-        else motor.setPower(0);
+//        telemetry.addData("b", distance.getDistance(DistanceUnit.CM));
+//        telemetry.addData("e", sensor.isPressed());
+//        telemetry.addData("a", mag.isPressed());
+//        telemetry.addData("c",color.argb());
+//        if(sensor.isPressed() || mag.isPressed()) motor.setPower(1);
+//        else motor.setPower(0);
     }
 
     @Override

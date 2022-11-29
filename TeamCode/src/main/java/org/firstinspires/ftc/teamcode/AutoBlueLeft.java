@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -22,6 +23,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import java.util.ArrayList;
 
 @Config
+@Disabled
 @Autonomous(group = "drive")
 public class AutoBlueLeft extends LinearOpMode {
 
@@ -55,7 +57,7 @@ public class AutoBlueLeft extends LinearOpMode {
             arm.moveTo(-130, 600);
             switch (autoState) {
                 case DRIVE:
-                    startPose = new Pose2d(-30.55, 65.07, Math.toRadians(176.99));
+                    startPose = new Pose2d(-30.55, 65.07, Math.toRadians(180));
                     drive.setPoseEstimate(startPose);
                     TrajectorySequence untitled0 = drive.trajectorySequenceBuilder(startPose)
                             .splineToLinearHeading(new Pose2d(-36.04, 38.78, Math.toRadians(236.31)), Math.toRadians(260.54))

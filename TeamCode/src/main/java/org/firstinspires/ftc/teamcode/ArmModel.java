@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.arcrobotics.ftclib.controller.PIDFController;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 
@@ -19,6 +22,7 @@ public class ArmModel {
     //Start Angle in degrees
     private final int forearmStartAngle = 180;
     private final int bicepStartAngle = 45;
+
 
     //Joint Limits
     private final int minInnerElbowAngle = 30;
@@ -63,7 +67,7 @@ public class ArmModel {
                 //Calculate upper motor angle
                 upperMotorAngle = Math.PI - (Math.PI - innerElbowAngle) - (Math.PI - lowerMotorAngle);
                 //Calculate wrist pitch (0-1)
-                wristPitch = 1-map(upperMotorAngle, -3*Math.PI/4, Math.PI, 0, 1) + 0.05;
+                wristPitch = 1-map(upperMotorAngle, -3*Math.PI/4, Math.PI, 0, 1) - 0.2;
             }
 
             //calculate target encoder position
