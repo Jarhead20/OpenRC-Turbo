@@ -54,7 +54,7 @@ public class AutoBlueLeft extends LinearOpMode {
         telemetry.setMsTransmissionInterval(50);
         while (opModeIsActive() && timer.time() < 30) {
             if(isStopRequested()) return;
-            arm.moveTo(-130, 600);
+            arm.moveTo(new Vector2(-130, 600));
             switch (autoState) {
                 case DRIVE:
                     startPose = new Pose2d(-30.55, 65.07, Math.toRadians(180));
