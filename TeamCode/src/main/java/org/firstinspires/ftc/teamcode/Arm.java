@@ -22,6 +22,9 @@ public class Arm {
     private Servo roll;
     private double armX = 0;
     private double armY = 0;
+    private double targetX = 0;
+    private double targetY = 0;
+    private double tolerance = 10;
     private Vector2[] armPoses = new Vector2[]{
             new Vector2(460, 700),
             new Vector2(-450, 200),
@@ -132,6 +135,8 @@ public class Arm {
         //TODO: Add Range of Motion Constraints
 
         double[] angles = model.calculateMotorPositions((int)vec.x, (int)vec.y);
+        targetX = vec.x;
+        targetY = vec.y;
         if (angles == null){
             return;
         }
@@ -197,5 +202,15 @@ public class Arm {
     public void setPower(double shoulder, double elbow){
         elbowMotor.setPower(elbow);
         shoulderMotor.setPower(shoulder);
+    }
+
+    public boolean atTarget(Vector2 vec){
+        double[] angles = model.calculateMotorPositions((int)vec.x, (int)vec.y);
+        targetShoulderAngle = angles[1];
+        targetElbowAngle = -angles[0];
+        if(Math.abs(shoulderMotor.getCurrentPosition() - targetShoulderAngle) < tolerance){
+            if(Math.abs(elbowMotor.getCurrentPosition() - (-targetElbowAngle)) < tolerance) return true;
+        }
+        return false;
     }
 }

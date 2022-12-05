@@ -64,6 +64,10 @@ public class AutoBlueRight extends LinearOpMode {
         DEPOSIT2,
         PICK2,
         DEPOSIT3,
+        PICK3,
+        DEPOSIT4,
+        PICK4,
+        DEPOSIT5,
         PARK2,
         STOP,
     }
@@ -71,6 +75,7 @@ public class AutoBlueRight extends LinearOpMode {
     int cameraMonitorViewId;
 
     ElapsedTime timer = new ElapsedTime();
+    ElapsedTime timer2 = new ElapsedTime();
     Arm arm;
     int offset = -50;
     int pickHeight = 180;
@@ -104,6 +109,7 @@ public class AutoBlueRight extends LinearOpMode {
         arm.closeGripper();
         waitForStart();
         timer.reset();
+
         telemetry.setMsTransmissionInterval(50);
 
         cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -158,7 +164,9 @@ public class AutoBlueRight extends LinearOpMode {
                 case ARMUP:
                     arm.setPower(0.3, 0.6);
                     arm.moveTo(new Vector2(-20, 830));
-                    if(timer.seconds() > 3) autoState = AutoState.PARK1;
+                    if(arm.atTarget(new Vector2(-20, 830))) {
+                        autoState = AutoState.PARK1;
+                    }
                     break;
                 case PARK1:
                     drive.setPoseEstimate(traj.start());
@@ -166,71 +174,119 @@ public class AutoBlueRight extends LinearOpMode {
 //                    arm.moveTo(236, 768);
                     //up 236, 768
                     //down -620, 300
-                    if(!drive.isBusy())
+                    if(!drive.isBusy()){
+                        arm.moveTo(new Vector2(depositLoc.x-30, 800));
                         autoState = AutoState.DEPOSIT;
-                    break;
-                case DEPOSIT:
-
-                    if(timer.seconds() > 8) {
-                        arm.moveTo(depositLoc);
-                        if(timer.seconds() > 9){
-                            arm.openGripper();
-                            autoState = AutoState.PICK1;
-                        }
-                    } else {
-                        arm.moveTo(new Vector2(depositLoc.x-30, 780));
-                        telemetry.addData("DEPOSIT", "DEPOSIT");
+                        timer2.reset();
                     }
                     break;
-                case PICK1:
+                case DEPOSIT:
+                    if(arm.atTarget(depositLoc)){
+                        arm.openGripper();
+                        arm.moveTo(pickup1);
+                        autoState = AutoState.PICK1;
+                        break;
+                    }
 
-                    if(timer.seconds() > 13) {
+                    if(arm.atTarget(new Vector2(depositLoc.x-30, 800)))
+                        if(timer2.seconds() > 2)
+                            arm.moveTo(depositLoc);
+
+                    break;
+                case PICK1:
+                    if(arm.atTarget(pickupGrab)){
+                        arm.closeGripper();
+                        autoState = AutoState.DEPOSIT2;
+                        timer2.reset();
+                        break;
+                    }
+                    if(arm.atTarget(pickup1)) {
                         arm.moveTo(pickupGrab);
-                        if(timer.seconds() > 13.5)
-                            arm.closeGripper();
-                        if(timer.seconds() > 14){
-                            autoState = AutoState.DEPOSIT2;
-                        }
-                    } else {
-                        if(timer.seconds() > 10)
-                            arm.moveTo(pickup1);
                     }
                     break;
                 case DEPOSIT2:
-
-                    if(timer.seconds() > 16)
-                        arm.moveTo(depositLoc);
-                    else
-                        arm.moveTo(pickupUp);
-                    if(timer.seconds() > 17){
+                    if(arm.atTarget(depositLoc)){
                         arm.openGripper();
+                        arm.moveTo(pickup1.lower(20));
                         autoState = AutoState.PICK2;
+                        break;
                     }
+                    if(arm.atTarget(pickupUp))
+                        arm.moveTo(depositLoc);
+                    if(timer2.seconds() > 0.5 && timer2.seconds() < 0.7)
+                        arm.moveTo(pickupUp);
                     break;
                 case PICK2:
-
-                    if(timer.seconds() > 20) {
+                    if(arm.atTarget(pickupGrab.lower(20))){
+                        arm.closeGripper();
+                        timer2.reset();
+                        autoState = AutoState.DEPOSIT3;
+                        break;
+                    }
+                    if(arm.atTarget(pickup1.lower(20))) {
                         arm.moveTo(pickupGrab.lower(20));
-                        if(timer.seconds() > 20.5)
-                            arm.closeGripper();
-                        if(timer.seconds() > 21){
-                            autoState = AutoState.DEPOSIT3;
-                        }
-                    } else {
-                        if(timer.seconds() > 18)
-                            arm.moveTo(pickup1.lower(20));
                     }
                     break;
                 case DEPOSIT3:
+                    if(arm.atTarget(depositLoc)){
+                        arm.openGripper();
+                        arm.moveTo(pickup1.lower(50));
+                        autoState = AutoState.PICK3;
+                        break;
+                    }
 
-                    if(timer.seconds() > 22)
+                    if(arm.atTarget(pickupUp))
                         arm.moveTo(depositLoc);
-                    else
+                    if(timer2.seconds() > 0.1 && timer2.seconds() < 0.2)
                         arm.moveTo(pickupUp);
-                    if(timer.seconds() > 24){
+
+                case PICK3:
+                    if(arm.atTarget(pickupGrab.lower(50))){
+                        arm.closeGripper();
+                        autoState = AutoState.DEPOSIT4;
+                        timer2.reset();
+                        break;
+                    }
+                    if(arm.atTarget(pickup1.lower(50))) {
+                        arm.moveTo(pickupGrab.lower(50));
+                    }
+                    break;
+                case DEPOSIT4:
+                    if(arm.atTarget(depositLoc)){
+                        arm.openGripper();
+                        autoState = AutoState.PICK4;
+                        break;
+                    }
+                    if(arm.atTarget(pickupUp))
+                        arm.moveTo(depositLoc);
+                    else if(timer2.seconds() > 0.1 && timer2.seconds() < 0.2)
+                        arm.moveTo(pickupUp);
+
+
+                    break;
+                case PICK4:
+                    if(arm.atTarget(pickupGrab.lower(80))){
+                        arm.closeGripper();
+                        autoState = AutoState.DEPOSIT5;
+                        timer2.reset();
+                        break;
+                    }
+                    if(arm.atTarget(pickup1.lower(80))) {
+                        arm.moveTo(pickupGrab.lower(80));
+                    }
+                    break;
+                case DEPOSIT5:
+                    if(arm.atTarget(depositLoc)){
                         arm.openGripper();
                         autoState = AutoState.PARK2;
+                        break;
                     }
+                    if(arm.atTarget(pickupUp))
+                        arm.moveTo(depositLoc);
+                    else if(timer2.seconds() > 0.1 && timer2.seconds() < 0.2)
+                        arm.moveTo(pickupUp);
+
+
                     break;
                 case PARK2:
                     switch (detection){
