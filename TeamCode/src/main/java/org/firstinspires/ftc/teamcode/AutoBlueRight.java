@@ -130,7 +130,7 @@ public class AutoBlueRight extends LinearOpMode {
             }
         });
         int detection = 0;
-        while (opModeIsActive() && timer.time() < 30) {
+        while (opModeIsActive() && timer.time() <= 30) {
             if(isStopRequested()) return;
             ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
 
@@ -213,7 +213,7 @@ public class AutoBlueRight extends LinearOpMode {
                     }
                     if(arm.atTarget(pickupUp))
                         arm.moveTo(depositLoc);
-                    if(timer2.seconds() > 0.5 && timer2.seconds() < 0.7)
+                    if(timer2.seconds() > 0.2 && timer2.seconds() < 0.3)
                         arm.moveTo(pickupUp);
                     break;
                 case PICK2:
@@ -237,7 +237,7 @@ public class AutoBlueRight extends LinearOpMode {
 
                     if(arm.atTarget(pickupUp))
                         arm.moveTo(depositLoc);
-                    if(timer2.seconds() > 0.1 && timer2.seconds() < 0.2)
+                    if(timer2.seconds() > 0.2 && timer2.seconds() < 0.3)
                         arm.moveTo(pickupUp);
 
                 case PICK3:
@@ -254,12 +254,13 @@ public class AutoBlueRight extends LinearOpMode {
                 case DEPOSIT4:
                     if(arm.atTarget(depositLoc)){
                         arm.openGripper();
+                        arm.moveTo(pickup1.lower(80));
                         autoState = AutoState.PICK4;
                         break;
                     }
                     if(arm.atTarget(pickupUp))
                         arm.moveTo(depositLoc);
-                    else if(timer2.seconds() > 0.1 && timer2.seconds() < 0.2)
+                    else if(timer2.seconds() > 0.2 && timer2.seconds() < 0.3)
                         arm.moveTo(pickupUp);
 
 
@@ -283,7 +284,7 @@ public class AutoBlueRight extends LinearOpMode {
                     }
                     if(arm.atTarget(pickupUp))
                         arm.moveTo(depositLoc);
-                    else if(timer2.seconds() > 0.1 && timer2.seconds() < 0.2)
+                    else if(timer2.seconds() > 0.2 && timer2.seconds() < 0.3)
                         arm.moveTo(pickupUp);
 
 
@@ -301,6 +302,10 @@ public class AutoBlueRight extends LinearOpMode {
                             break;
                     }
                     autoState = AutoState.STOP;
+                    break;
+                case STOP:
+                    telemetry.addData("parking", "parking");
+                    break;
 
             }
 
