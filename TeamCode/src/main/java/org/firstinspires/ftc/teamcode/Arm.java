@@ -204,12 +204,18 @@ public class Arm {
         shoulderMotor.setPower(shoulder);
     }
 
+    int atCount = 0;
+
     public boolean atTarget(Vector2 vec){
         double[] angles = model.calculateMotorPositions((int)vec.x, (int)vec.y);
         targetShoulderAngle = angles[1];
         targetElbowAngle = -angles[0];
+        if(atCount >= 20) {
+            atCount = 0;
+            return true;
+        }
         if(Math.abs(shoulderMotor.getCurrentPosition() - targetShoulderAngle) < tolerance){
-            if(Math.abs(elbowMotor.getCurrentPosition() - (-targetElbowAngle)) < tolerance) return true;
+            if(Math.abs(elbowMotor.getCurrentPosition() - (-targetElbowAngle)) < tolerance) atCount++;
         }
         return false;
     }

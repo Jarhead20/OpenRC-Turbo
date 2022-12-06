@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -68,6 +69,8 @@ public class AutoBlueRight extends LinearOpMode {
         DEPOSIT4,
         PICK4,
         DEPOSIT5,
+        PICK5,
+        DEPOSIT6,
         PARK2,
         STOP,
     }
@@ -76,9 +79,13 @@ public class AutoBlueRight extends LinearOpMode {
 
     ElapsedTime timer = new ElapsedTime();
     ElapsedTime timer2 = new ElapsedTime();
+    ElapsedTime timer3 = new ElapsedTime();
     Arm arm;
     int offset = -50;
     int pickHeight = 180;
+    double pickStart = 0.5;
+    double pickEnd = 0.7;
+    double openDelay = 0.5;
     Vector2 pickup1 = new Vector2(-400+offset, pickHeight);
     Vector2 pickupGrab = new Vector2(-600+offset, pickHeight);
     Vector2 pickupUp = new Vector2(-500+offset, 400);
@@ -93,7 +100,7 @@ public class AutoBlueRight extends LinearOpMode {
 
         traj = drive.trajectoryBuilder(new Pose2d(-37.42, 66.46, Math.toRadians(180.00)))
                 .splineTo(new Vector2d(-36.29, 50.21), Math.toRadians(-83.09))
-                .splineToSplineHeading(new Pose2d(-35.00, 4, Math.toRadians(168)), Math.toRadians(-84.38))
+                .splineToSplineHeading(new Pose2d(-35.00, 4, Math.toRadians(172)), Math.toRadians(-84.38))
                 .build();
         park3 = drive.trajectoryBuilder(traj.end())
                 .splineToConstantHeading(new Vector2d(-37.58, 35.77), Math.toRadians(195.95))
@@ -107,10 +114,6 @@ public class AutoBlueRight extends LinearOpMode {
                 .splineTo(new Vector2d(-10.64, 23.79), Math.toRadians(-74.74))
                 .build();
         arm.closeGripper();
-        waitForStart();
-        timer.reset();
-
-        telemetry.setMsTransmissionInterval(50);
 
         cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -129,12 +132,19 @@ public class AutoBlueRight extends LinearOpMode {
 
             }
         });
-        int detection = 0;
+        waitForStart();
+        timer.reset();
+
+        telemetry.setMsTransmissionInterval(50);
+
+
+        int detection = 9;
         while (opModeIsActive() && timer.time() <= 30) {
             if(isStopRequested()) return;
             ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
 
             telemetry.addData("detection", detection);
+            telemetry.addData("autoState", autoState);
             switch (autoState) {
                 case START:
                     if (detections != null) {
@@ -177,20 +187,28 @@ public class AutoBlueRight extends LinearOpMode {
                     if(!drive.isBusy()){
                         arm.moveTo(new Vector2(depositLoc.x-30, 800));
                         autoState = AutoState.DEPOSIT;
-                        timer2.reset();
+
                     }
                     break;
                 case DEPOSIT:
-                    if(arm.atTarget(depositLoc)){
-                        arm.openGripper();
+                    telemetry.addData("timer2", timer2.seconds());
+                    telemetry.addData("timer3", timer3.seconds());
+                    if(inRange(timer3, openDelay)){
                         arm.moveTo(pickup1);
                         autoState = AutoState.PICK1;
                         break;
+                    } else if(arm.atTarget(depositLoc)){
+                        arm.openGripper();
+                        timer3.reset();
                     }
 
-                    if(arm.atTarget(new Vector2(depositLoc.x-30, 800)))
-                        if(timer2.seconds() > 2)
-                            arm.moveTo(depositLoc);
+
+                    if(inRange(timer2, pickStart)){
+                        arm.moveTo(depositLoc);
+                    } else if(arm.atTarget(new Vector2(depositLoc.x-30, 800)))
+                        timer2.reset();
+
+
 
                     break;
                 case PICK1:
@@ -206,39 +224,49 @@ public class AutoBlueRight extends LinearOpMode {
                     break;
                 case DEPOSIT2:
                     if(arm.atTarget(depositLoc)){
+                        timer3.reset();
                         arm.openGripper();
-                        arm.moveTo(pickup1.lower(20));
+                    }
+                    if(inRange(timer3, openDelay)){
+                        arm.moveTo(pickup1.lower(25));
                         autoState = AutoState.PICK2;
                         break;
                     }
-                    if(arm.atTarget(pickupUp))
+                    if(arm.atTarget(pickupUp)){
                         arm.moveTo(depositLoc);
-                    if(timer2.seconds() > 0.2 && timer2.seconds() < 0.3)
+                    }
+
+                    if(inRange(timer2, pickStart))
                         arm.moveTo(pickupUp);
                     break;
                 case PICK2:
-                    if(arm.atTarget(pickupGrab.lower(20))){
+                    if(arm.atTarget(pickupGrab.lower(25))){
                         arm.closeGripper();
                         timer2.reset();
                         autoState = AutoState.DEPOSIT3;
                         break;
                     }
-                    if(arm.atTarget(pickup1.lower(20))) {
-                        arm.moveTo(pickupGrab.lower(20));
+                    if(arm.atTarget(pickup1.lower(25))) {
+                        arm.moveTo(pickupGrab.lower(25));
                     }
                     break;
                 case DEPOSIT3:
                     if(arm.atTarget(depositLoc)){
+                        timer3.reset();
                         arm.openGripper();
+                    }
+                    if(inRange(timer3, openDelay)){
                         arm.moveTo(pickup1.lower(50));
                         autoState = AutoState.PICK3;
                         break;
                     }
-
-                    if(arm.atTarget(pickupUp))
+                    if(arm.atTarget(pickupUp)){
                         arm.moveTo(depositLoc);
-                    if(timer2.seconds() > 0.2 && timer2.seconds() < 0.3)
+                    }
+
+                    if(inRange(timer2, pickStart))
                         arm.moveTo(pickupUp);
+                    break;
 
                 case PICK3:
                     if(arm.atTarget(pickupGrab.lower(50))){
@@ -253,41 +281,72 @@ public class AutoBlueRight extends LinearOpMode {
                     break;
                 case DEPOSIT4:
                     if(arm.atTarget(depositLoc)){
+                        timer3.reset();
                         arm.openGripper();
-                        arm.moveTo(pickup1.lower(80));
+                    }
+                    if(inRange(timer3, openDelay)){
+                        arm.moveTo(pickup1.lower(75));
                         autoState = AutoState.PICK4;
                         break;
                     }
-                    if(arm.atTarget(pickupUp))
+                    if(arm.atTarget(pickupUp)){
                         arm.moveTo(depositLoc);
-                    else if(timer2.seconds() > 0.2 && timer2.seconds() < 0.3)
+                    }
+
+                    if(inRange(timer2, pickStart))
                         arm.moveTo(pickupUp);
-
-
                     break;
                 case PICK4:
-                    if(arm.atTarget(pickupGrab.lower(80))){
+                    if(arm.atTarget(pickupGrab.lower(75))){
                         arm.closeGripper();
                         autoState = AutoState.DEPOSIT5;
                         timer2.reset();
                         break;
                     }
-                    if(arm.atTarget(pickup1.lower(80))) {
-                        arm.moveTo(pickupGrab.lower(80));
+                    if(arm.atTarget(pickup1.lower(75))) {
+                        arm.moveTo(pickupGrab.lower(75));
                     }
                     break;
                 case DEPOSIT5:
+                    if(arm.atTarget(depositLoc)){
+                        timer3.reset();
+                        arm.openGripper();
+                    }
+                    if(inRange(timer3, openDelay)){
+//                        arm.moveTo(pickup1.lower(100));
+                        autoState = AutoState.PARK2;
+                        break;
+                    }
+                    if(arm.atTarget(pickupUp)){
+                        arm.moveTo(depositLoc);
+                    }
+
+                    if(inRange(timer2, pickStart))
+                        arm.moveTo(pickupUp);
+                    break;
+                case PICK5:
+                    if(arm.atTarget(pickupGrab.lower(100))){
+                        arm.closeGripper();
+                        autoState = AutoState.DEPOSIT5;
+                        timer2.reset();
+                        break;
+                    }
+                    if(arm.atTarget(pickup1.lower(100))) {
+                        arm.moveTo(pickupGrab.lower(100));
+                    }
+                    break;
+                case DEPOSIT6:
                     if(arm.atTarget(depositLoc)){
                         arm.openGripper();
                         autoState = AutoState.PARK2;
                         break;
                     }
-                    if(arm.atTarget(pickupUp))
+                    if(arm.atTarget(pickupUp)){
                         arm.moveTo(depositLoc);
-                    else if(timer2.seconds() > 0.2 && timer2.seconds() < 0.3)
+                        timer3.reset();
+                    }
+                    else if(inRange(timer2, pickStart))
                         arm.moveTo(pickupUp);
-
-
                     break;
                 case PARK2:
                     switch (detection){
@@ -299,6 +358,8 @@ public class AutoBlueRight extends LinearOpMode {
                             break;
                         case 21:
                             drive.followTrajectory(park3);
+                            break;
+                        case 9:
                             break;
                     }
                     autoState = AutoState.STOP;
@@ -315,5 +376,98 @@ public class AutoBlueRight extends LinearOpMode {
             telemetry.addData("etime", timer.time());
             telemetry.update();
         }
+    }
+
+    public enum Cycles {
+        DEPOSIT,
+        DOWN,
+        GRAB,
+        UP,
+    }
+
+    public Cycles cycleState = Cycles.DEPOSIT;
+//    case DEPOSIT3:
+//            if(arm.atTarget(depositLoc)){
+//        timer3.reset();
+//        arm.openGripper();
+//    }
+//                    if(inRange(timer3, openDelay)){
+//        arm.moveTo(pickup1.lower(50));
+//        autoState = AutoState.PICK3;
+//        break;
+//    }
+//                    if(arm.atTarget(pickupUp)){
+//        arm.moveTo(depositLoc);
+//    }
+//
+//                    if(inRange(timer2, pickStart))
+//            arm.moveTo(pickupUp);
+//                    break;
+//
+//                case PICK3:
+//            if(arm.atTarget(pickupGrab.lower(50))){
+//        arm.closeGripper();
+//        autoState = AutoState.DEPOSIT4;
+//        timer2.reset();
+//        break;
+//    }
+//                    if(arm.atTarget(pickup1.lower(50))) {
+//        arm.moveTo(pickupGrab.lower(50));
+//    }
+//                    break;
+
+    boolean oneTime = false;
+
+    public boolean cycle(double lower){
+        switch (cycleState){
+            case DEPOSIT:
+                if(arm.atTarget(depositLoc) && !oneTime){
+                    timer2.reset();
+                    oneTime = true;
+                }
+
+                if(timer2.seconds() > 0.2){
+                    arm.openGripper();
+                    if(timer2.seconds() > 0.4)
+                        arm.moveTo(pickup1.lower(lower));
+                        cycleState = Cycles.DOWN;
+                }
+                break;
+            case DOWN:
+                if(arm.atTarget(pickup1.lower(lower))){
+                    arm.moveTo(pickupGrab.lower(lower));
+                    oneTime = false;
+                    cycleState = Cycles.GRAB;
+                }
+                break;
+            case GRAB:
+                if(arm.atTarget(pickupGrab.lower(lower)) && !oneTime){
+                    oneTime = true;
+                    timer2.reset();
+                }
+
+                if(timer2.seconds() > 0.2){
+                    arm.closeGripper();
+                    if(timer2.seconds() > 0.4){
+                        arm.moveTo(pickupUp);
+                        oneTime = false;
+                        cycleState = Cycles.UP;
+                    }
+                }
+                break;
+            case UP:
+                if(arm.atTarget(pickupUp)){
+                    arm.moveTo(depositLoc);
+                }
+                if(arm.atTarget(depositLoc)) return true;
+
+        }
+        return false;
+    }
+
+    private boolean inRange(ElapsedTime timer, double time){
+        double low = time-0.1;
+        double high = time+0.1;
+        return (timer.seconds() >= low && timer.seconds() <= high);
     }
 }
