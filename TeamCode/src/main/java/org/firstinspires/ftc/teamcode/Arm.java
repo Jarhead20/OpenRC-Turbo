@@ -24,7 +24,7 @@ public class Arm {
     private double armY = 0;
     private double targetX = 0;
     private double targetY = 0;
-    private double tolerance = 10;
+    private double tolerance = 100;
     private Vector2[] armPoses = new Vector2[]{
             new Vector2(460, 700),
             new Vector2(-450, 200),
@@ -210,12 +210,18 @@ public class Arm {
         double[] angles = model.calculateMotorPositions((int)vec.x, (int)vec.y);
         targetShoulderAngle = angles[1];
         targetElbowAngle = -angles[0];
-        if(atCount >= 20) {
-            atCount = 0;
-            return true;
-        }
         if(Math.abs(shoulderMotor.getCurrentPosition() - targetShoulderAngle) < tolerance){
-            if(Math.abs(elbowMotor.getCurrentPosition() - (-targetElbowAngle)) < tolerance) atCount++;
+            if(Math.abs(elbowMotor.getCurrentPosition() - (-targetElbowAngle)) < tolerance) return true;
+        }
+        return false;
+    }
+
+    public boolean atTarget(Vector2 vec, double tol){
+        double[] angles = model.calculateMotorPositions((int)vec.x, (int)vec.y);
+        targetShoulderAngle = angles[1];
+        targetElbowAngle = -angles[0];
+        if(Math.abs(shoulderMotor.getCurrentPosition() - targetShoulderAngle) < tol){
+            if(Math.abs(elbowMotor.getCurrentPosition() - (-targetElbowAngle)) < tol) return true;
         }
         return false;
     }
