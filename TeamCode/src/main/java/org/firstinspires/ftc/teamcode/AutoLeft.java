@@ -22,7 +22,7 @@ import java.util.ArrayList;
 
 @Config
 @Autonomous(group = "drive")
-public class AutoBlueRight extends LinearOpMode {
+public class AutoLeft extends LinearOpMode {
 
     public SampleMecanumDrive drive;
     public Drive d;
@@ -91,20 +91,21 @@ public class AutoBlueRight extends LinearOpMode {
         drive = new SampleMecanumDrive(hardwareMap);
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        traj = drive.trajectoryBuilder(new Pose2d(-37.42, 66.46, Math.toRadians(180.00)))
-                .splineTo(new Vector2d(-36.29, 50.21), Math.toRadians(-83.09))
-                .splineToSplineHeading(new Pose2d(-35.00, 4, Math.toRadians(172)), Math.toRadians(-84.38))
+        traj = drive.trajectoryBuilder(new Pose2d(37.42, 66.46, Math.toRadians(180.00)))
+                .splineTo(new Vector2d(36.29, 50.21), Math.toRadians(263))
+                .splineToSplineHeading(new Pose2d(35.00, 4, Math.toRadians(8)), Math.toRadians(264))
                 .build();
         park3 = drive.trajectoryBuilder(traj.end())
-                .splineToConstantHeading(new Vector2d(-37.58, 35.77), Math.toRadians(195.95))
-                .splineTo(new Vector2d(-59.75, 25.07), Math.toRadians(-74.74))
+                .splineTo(new Vector2d(33.07, 11.41), Math.toRadians(169.09))
+                .splineTo(new Vector2d(12.57, 24.04), Math.toRadians(90.00))
                 .build();
         park2 = drive.trajectoryBuilder(traj.end())
-                .splineTo(new Vector2d(-36.29, 38.35), Math.toRadians(99.46))
+                .splineTo(new Vector2d(36.93, 12.18), Math.toRadians(94.86))
+                .splineTo(new Vector2d(36.16, 24.82), Math.toRadians(100.01))
                 .build();
         park1 = drive.trajectoryBuilder(traj.end())
-                .splineToConstantHeading(new Vector2d(-28.94, 35.65), Math.toRadians(18.29))
-                .splineTo(new Vector2d(-10.64, 23.79), Math.toRadians(-74.74))
+                .splineTo(new Vector2d(38.09, 12.57), Math.toRadians(10.92))
+                .splineTo(new Vector2d(61.43, 23.27), Math.toRadians(86.76))
                 .build();
         arm.closeGripper();
 
@@ -135,9 +136,6 @@ public class AutoBlueRight extends LinearOpMode {
         while (opModeIsActive() && timer.time() <= 30) {
             if(isStopRequested()) return;
             ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
-
-            telemetry.addData("detection", detection);
-            telemetry.addData(autoState + "", cycleState);
             switch (autoState) {
                 case START:
                     if (detections != null) {
