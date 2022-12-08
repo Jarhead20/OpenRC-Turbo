@@ -15,8 +15,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class Arm {
-    private DcMotorEx shoulderMotor;
-    private DcMotorEx elbowMotor;
+    public DcMotorEx shoulderMotor;
+    public DcMotorEx elbowMotor;
     public Servo gripper;
     private Servo pitch;
     private Servo roll;
@@ -24,11 +24,11 @@ public class Arm {
     private double armY = 0;
     private double targetX = 0;
     private double targetY = 0;
-    private double tolerance = 100;
+    private double tolerance = 50;
     private Vector2[] armPoses = new Vector2[]{
-            new Vector2(460, 700),
-            new Vector2(-450, 200),
-            new Vector2(-350, 200),
+            new Vector2(200, 740),
+            new Vector2(-350, 30),
+            new Vector2(-480, 30),
             new Vector2(200, 300),
             new Vector2(-430, 200),
             new Vector2(-10, 700),
@@ -81,7 +81,7 @@ public class Arm {
         }
 
         elbowMotor.setPower(0.4);
-        shoulderMotor.setPower(0.4);
+        shoulderMotor.setPower(0.6);
 
         if (gamepad.dpad_up){
             position = 0;
@@ -113,10 +113,11 @@ public class Arm {
                 else index = position;
                 break;
             case 2:
+                index = position;
                 break;
         }
 
-
+        telemetry.addData("index", index);
 
 
         Vector2 vec = armPoses[index];

@@ -74,15 +74,13 @@ public class AutoLeft extends LinearOpMode {
     ElapsedTime timer2 = new ElapsedTime();
     ElapsedTime timer3 = new ElapsedTime();
     Arm arm;
-    int offset = -50;
-    int pickHeight = 210;
-    double pickStart = 0.5;
-    double pickEnd = 0.7;
-    double openDelay = 0.5;
-    Vector2 pickup1 = new Vector2(-400+offset, pickHeight);
+    int offset = -110;
+    int pickHeight = 200;
+    Vector2 pickup1 = new Vector2(-450+offset, pickHeight);
     Vector2 pickupGrab = new Vector2(-600+offset, pickHeight);
     Vector2 pickupUp = new Vector2(-500+offset, 400);
-    Vector2 depositLoc = new Vector2(170, 690);
+    Vector2 depositLoc = new Vector2(100, 690);
+    double downAmount = 30;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -91,9 +89,9 @@ public class AutoLeft extends LinearOpMode {
         drive = new SampleMecanumDrive(hardwareMap);
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        traj = drive.trajectoryBuilder(new Pose2d(37.42, 66.46, Math.toRadians(180.00)))
-                .splineTo(new Vector2d(36.29, 50.21), Math.toRadians(263))
-                .splineToSplineHeading(new Pose2d(35.00, 4, Math.toRadians(8)), Math.toRadians(264))
+        traj = drive.trajectoryBuilder(new Pose2d(35.29, 66.46, Math.toRadians(180.00)))
+                .splineToSplineHeading(new Pose2d(35.13, 46.60, Math.toRadians(185.71)), Math.toRadians(-86.42))
+                .splineToSplineHeading(new Pose2d(38.0, 5.00, Math.toRadians(16.00)), Math.toRadians(266.69))
                 .build();
         park3 = drive.trajectoryBuilder(traj.end())
                 .splineTo(new Vector2d(33.07, 11.41), Math.toRadians(169.09))
@@ -176,15 +174,15 @@ public class AutoLeft extends LinearOpMode {
                     //up 236, 768
                     //down -620, 300
                     if(!drive.isBusy()){
-                        arm.moveTo(new Vector2(depositLoc.x-30, 800));
+                        arm.moveTo(new Vector2(depositLoc.x-50, 800));
                         autoState = AutoState.PRELOAD;
                         timer3.reset();
 
                     }
                     break;
                 case PRELOAD:
-                    if(arm.atTarget(new Vector2(depositLoc.x-30, 800), 7)){
-                        if(timer3.seconds() > 2){
+                    if(arm.atTarget(new Vector2(depositLoc.x-50, 800), 7)){
+                        if(timer3.seconds() > 1){
                             arm.moveTo(depositLoc);
                             autoState = AutoState.CYCLE1;
                         }
@@ -196,33 +194,42 @@ public class AutoLeft extends LinearOpMode {
                         autoState = AutoState.CYCLE2;
                     break;
                 case CYCLE2:
-                    if(cycle(25))
+                    if(cycle(downAmount))
                         autoState = AutoState.CYCLE3;
                     break;
                 case CYCLE3:
-                    if(cycle(50))
+                    if(cycle(downAmount*2))
                         autoState = AutoState.CYCLE4;
                     break;
                 case CYCLE4:
-                    if(cycle(75))
+                    if(cycle(downAmount*3))
                         autoState = AutoState.PARK2;
                     break;
                 case PARK2:
+
                     arm.openGripper();
-                    switch (detection){
-                        case 10:
-                            drive.followTrajectory(park1);
-                            break;
-                        case 11:
-                            drive.followTrajectory(park2);
-                            break;
-                        case 21:
-                            drive.followTrajectory(park3);
-                            break;
-                        case 9:
-                            break;
+                    arm.shoulderMotor.setTargetPosition(0);
+                    arm.elbowMotor.setTargetPosition(0);
+                    arm.shoulderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    arm.elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    arm.shoulderMotor.setPower(0.5);
+                    arm.elbowMotor.setPower(0.5);
+                    if(!arm.elbowMotor.isBusy() && !arm.shoulderMotor.isBusy()){
+                            switch (detection){
+                                case 10:
+                                    drive.followTrajectory(park1);
+                                    break;
+                                case 11:
+                                    drive.followTrajectory(park2);
+                                    break;
+                                case 21:
+                                    drive.followTrajectory(park3);
+                                    break;
+                                case 9:
+                                    break;
+                            }
+                        autoState = AutoState.STOP;
                     }
-                    autoState = AutoState.STOP;
                     break;
                 case STOP:
                     telemetry.addData("parking", "parking");

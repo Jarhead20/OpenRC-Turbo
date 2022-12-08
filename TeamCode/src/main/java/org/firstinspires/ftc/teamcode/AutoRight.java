@@ -75,15 +75,12 @@ public class AutoRight extends LinearOpMode {
     ElapsedTime timer3 = new ElapsedTime();
     Arm arm;
     int offset = -50;
-    int pickHeight = 210;
-    double pickStart = 0.5;
-    double pickEnd = 0.7;
-    double openDelay = 0.5;
-    Vector2 pickup1 = new Vector2(-400+offset, pickHeight);
+    int pickHeight = 190;
+    Vector2 pickup1 = new Vector2(-450+offset, pickHeight);
     Vector2 pickupGrab = new Vector2(-600+offset, pickHeight);
     Vector2 pickupUp = new Vector2(-500+offset, 400);
     Vector2 depositLoc = new Vector2(170, 690);
-
+    double downAmount = 30;
     @Override
     public void runOpMode() throws InterruptedException {
         arm = new Arm(hardwareMap, telemetry, timer);
@@ -92,8 +89,8 @@ public class AutoRight extends LinearOpMode {
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         traj = drive.trajectoryBuilder(new Pose2d(-37.42, 66.46, Math.toRadians(180.00)))
-                .splineTo(new Vector2d(-36.29, 50.21), Math.toRadians(-83.09))
-                .splineToSplineHeading(new Pose2d(-35.00, 4, Math.toRadians(172)), Math.toRadians(-84.38))
+                .splineToSplineHeading(new Pose2d(-36.03, 50.73, Math.toRadians(209.00)), Math.toRadians(-82.65))
+                .splineToSplineHeading(new Pose2d(-36.00, 5.00, Math.toRadians(171.00)), Math.toRadians(-84.38))
                 .build();
         park3 = drive.trajectoryBuilder(traj.end())
                 .splineTo(new Vector2d(-36.68, 12.96), Math.toRadians(166.66))
@@ -184,7 +181,7 @@ public class AutoRight extends LinearOpMode {
                     break;
                 case PRELOAD:
                     if(arm.atTarget(new Vector2(depositLoc.x-30, 800), 7)){
-                        if(timer3.seconds() > 2){
+                        if(timer3.seconds() > 1){
                             arm.moveTo(depositLoc);
                             autoState = AutoState.CYCLE1;
                         }
@@ -196,33 +193,42 @@ public class AutoRight extends LinearOpMode {
                         autoState = AutoState.CYCLE2;
                     break;
                 case CYCLE2:
-                    if(cycle(25))
+                    if(cycle(downAmount))
                         autoState = AutoState.CYCLE3;
                     break;
                 case CYCLE3:
-                    if(cycle(50))
+                    if(cycle(downAmount*2))
                         autoState = AutoState.CYCLE4;
                     break;
                 case CYCLE4:
-                    if(cycle(75))
+                    if(cycle(downAmount*3))
                         autoState = AutoState.PARK2;
                     break;
                 case PARK2:
                     arm.openGripper();
-                    switch (detection){
-                        case 10:
-                            drive.followTrajectory(park1);
-                            break;
-                        case 11:
-                            drive.followTrajectory(park2);
-                            break;
-                        case 21:
-                            drive.followTrajectory(park3);
-                            break;
-                        case 9:
-                            break;
+
+                    arm.shoulderMotor.setTargetPosition(0);
+                    arm.elbowMotor.setTargetPosition(0);
+                    arm.shoulderMotor.setPower(0.5);
+                    arm.elbowMotor.setPower(0.5);
+                    arm.shoulderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    arm.elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    if(!arm.elbowMotor.isBusy() && !arm.shoulderMotor.isBusy()) {
+                        switch (detection) {
+                            case 10:
+                                drive.followTrajectory(park1);
+                                break;
+                            case 11:
+                                drive.followTrajectory(park2);
+                                break;
+                            case 21:
+                                drive.followTrajectory(park3);
+                                break;
+                            case 9:
+                                break;
+                        }
+                        autoState = AutoState.STOP;
                     }
-                    autoState = AutoState.STOP;
                     break;
                 case STOP:
                     telemetry.addData("parking", "parking");
