@@ -75,7 +75,7 @@ public class AutoRight extends LinearOpMode {
     ElapsedTime timer3 = new ElapsedTime();
     Arm arm;
     int offset = -50;
-    int pickHeight = 190;
+    int pickHeight = 215;
     Vector2 pickup1 = new Vector2(-450+offset, pickHeight);
     Vector2 pickupGrab = new Vector2(-600+offset, pickHeight);
     Vector2 pickupUp = new Vector2(-500+offset, 400);
@@ -90,7 +90,7 @@ public class AutoRight extends LinearOpMode {
 
         traj = drive.trajectoryBuilder(new Pose2d(-37.42, 66.46, Math.toRadians(180.00)))
                 .splineToSplineHeading(new Pose2d(-36.03, 50.73, Math.toRadians(209.00)), Math.toRadians(-82.65))
-                .splineToSplineHeading(new Pose2d(-36.00, 5.00, Math.toRadians(171.00)), Math.toRadians(-84.38))
+                .splineToSplineHeading(new Pose2d(-34.00, 3.75, Math.toRadians(173.00)), Math.toRadians(-84.38))
                 .build();
         park3 = drive.trajectoryBuilder(traj.end())
                 .splineTo(new Vector2d(-36.68, 12.96), Math.toRadians(166.66))
@@ -160,7 +160,7 @@ public class AutoRight extends LinearOpMode {
                         autoState = AutoState.ARMUP;
                     break;
                 case ARMUP:
-                    arm.setPower(0.3, 0.6);
+                    arm.setPower(0.3, 0.5);
                     arm.moveTo(new Vector2(-20, 830));
                     if(arm.atTarget(new Vector2(-20, 830))) {
                         autoState = AutoState.PARK1;
@@ -279,7 +279,7 @@ public class AutoRight extends LinearOpMode {
                 }
                 break;
             case GRAB:
-                if(arm.atTarget(pickupGrab.lower(lower), 7) && !oneTime){
+                if(arm.atTarget(pickupGrab.lower(lower), 5) && !oneTime){
                     oneTime = true;
                     timer2.reset();
                 }
