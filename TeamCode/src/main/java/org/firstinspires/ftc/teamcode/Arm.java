@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode;
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -6,7 +7,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -15,6 +15,10 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class Arm {
+    // things for PIDF controller
+    private PIDFController controller;
+    public static double p = 0, i = 0, d = 0, f = 0;
+
     public DcMotorEx shoulderMotor;
     public DcMotorEx elbowMotor;
     public Servo gripper;
@@ -39,14 +43,16 @@ public class Arm {
     public int index = 0;
     public int position = 0;
 
-    private double targetShoulderAngle = 0;
+    private double targetShoulderAngle = 0; // used in PIDF, should it go up?
     private double targetElbowAngle = 0;
     ArmModel model = new ArmModel();
 
     Telemetry telemetry;
     ElapsedTime runtime;
 
-    public Arm (HardwareMap map, Telemetry telemetry, ElapsedTime runtime){
+    public Arm (HardwareMap map, Telemetry telemetry, ElapsedTime runtime) {
+        controller = new PIDFController(p, i, d, f);
+
         this.runtime = runtime;
         this.telemetry = telemetry;
         shoulderMotor = map.get(DcMotorEx.class, "arm1");
@@ -61,6 +67,25 @@ public class Arm {
         elbowMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         elbowMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         elbowMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+    }
+
+    public void armPIDF() {
+        controller.setPIDF(p, i, d, f);
+
+        double shoulderPower = calculatePIDF(shoulderMotor, (int) targetShoulderAngle);
+        double elbowPower = calculatePIDF(elbowMotor, (int) targetElbowAngle);
+
+        telemetry.addData("shoulderPower", shoulderPower);
+        telemetry.addData("elbowPower", elbowPower);
+
+//        shoulderMotor.setPower(shoulderPower);
+//        elbowMotor.setPower(elbowPower);
+    }
+    private double calculatePIDF(DcMotorEx motor, int targetEncoder) {
+        double motorPID = controller.calculate(motor.getCurrentPosition(), targetEncoder);
+        double forwardFeed = Math.cos(Math.toRadians(model.encoderToDegrees(targetEncoder))) * f;
+
+        return motorPID + forwardFeed;
     }
 
     public void initLoop() throws InterruptedException {
