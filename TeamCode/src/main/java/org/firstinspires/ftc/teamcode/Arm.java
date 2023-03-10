@@ -139,11 +139,14 @@ public class Arm {
         targetX = vec.x;
         targetY = vec.y;
         if (angles == null){
+            telemetry.addData("null", "null");
             return;
         }
         if (angles[1] < 0){
+            telemetry.addLine("less than zero");
             return;
         }
+
         targetShoulderAngle = angles[1];
         targetElbowAngle = -angles[0];
         shoulderMotor.setTargetPosition((int)targetShoulderAngle);

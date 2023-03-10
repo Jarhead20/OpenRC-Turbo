@@ -54,10 +54,10 @@ public class DriveConstants {
      * the built-in velocity PID, *these values are fine as is*. However, if you do not have drive
      * motor encoders or have elected not to use them for velocity control, these values should be
      * empirically tuned.
-     */
-    public static double kV = 0.0258;
-    public static double kA = 0.005;
-    public static double kStatic = 0.10124;
+     *///0.01220 0.04144
+    public static double kV = 0.0118;
+    public static double kA = 0.002;
+    public static double kStatic = 0.03;
 
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,

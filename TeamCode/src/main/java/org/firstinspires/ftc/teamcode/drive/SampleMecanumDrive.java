@@ -62,7 +62,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     public static double VY_WEIGHT = 1;
     public static double OMEGA_WEIGHT = 1;
 
-    public static double MOTOR_MULTIPLIER = 0.5;
+    public static double MOTOR_MULTIPLIER = 1;
 
     private TrajectorySequenceRunner trajectorySequenceRunner;
 
