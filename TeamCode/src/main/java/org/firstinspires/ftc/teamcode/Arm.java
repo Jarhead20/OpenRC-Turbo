@@ -43,12 +43,16 @@ public class Arm {
     public int index = 0;
     public int position = 0;
 
-    private double targetShoulderAngle = 0; // used in PIDF, should it go up?
+    private double targetShoulderAngle = 0;
     private double targetElbowAngle = 0;
     ArmModel model = new ArmModel();
 
     Telemetry telemetry;
     ElapsedTime runtime;
+
+    //Information About motor
+    private final int ticksPerRevolution = 1440;
+    private final double gearRatio = (40.0/18.0);
 
     public Arm (HardwareMap map, Telemetry telemetry, ElapsedTime runtime) {
         controller = new PIDFController(p, i, d, f);
@@ -82,10 +86,16 @@ public class Arm {
 //        elbowMotor.setPower(elbowPower);
     }
     private double calculatePIDF(DcMotorEx motor, int targetEncoder) {
-        double motorPID = controller.calculate(motor.getCurrentPosition(), targetEncoder);
-        double forwardFeed = Math.cos(Math.toRadians(model.encoderToDegrees(targetEncoder))) * f;
+        double motorPID = controller.calculate(motor.getCurrentPosition(), radiansToEncoder(Math.toRadians(targetEncoder)));
+        double forwardFeed = Math.cos(Math.toRadians(targetEncoder)) * f;
 
         return motorPID + forwardFeed;
+    }
+    public int radiansToEncoder(double radians){
+        double revolutions = radians / (2 * Math.PI);
+        int ticks = (int) (revolutions * ticksPerRevolution * gearRatio);
+
+        return ticks;
     }
 
     public void initLoop() throws InterruptedException {
