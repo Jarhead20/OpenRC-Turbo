@@ -82,8 +82,8 @@ public class Arm {
         telemetry.addData("shoulderPower", shoulderPower);
         telemetry.addData("elbowPower", elbowPower);
 
-//        shoulderMotor.setPower(shoulderPower);
-//        elbowMotor.setPower(elbowPower);
+        shoulderMotor.setPower(shoulderPower);
+        elbowMotor.setPower(elbowPower);
     }
     private double calculatePIDF(DcMotorEx motor, int targetEncoder) {
         double motorPID = controller.calculate(motor.getCurrentPosition(), radiansToEncoder(Math.toRadians(targetEncoder)));
@@ -101,8 +101,6 @@ public class Arm {
     public void initLoop() throws InterruptedException {
         reportCurrentPosition();
     }
-
-    boolean up = false;
 
     ElapsedTime armTimer = new ElapsedTime();
 
