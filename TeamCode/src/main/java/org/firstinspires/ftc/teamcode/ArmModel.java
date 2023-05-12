@@ -1,36 +1,39 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.sax.StartElementListener;
+
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 
 public class ArmModel {
     //Distances all in mm
-    private final double bicepLength = 420;
-    private final double forearmLength = 430;
+    private final double bicepLength = 405;
+    private final double forearmLength = 405;
 
     //Information About motor
-    private final int ticksPerRevolution = 1440;
-    private final double gearRatio = (40.0/18.0);
+    private final int ticksPerRevolution = 3895;
+    private final double gearRatio = (26.0/28.0);
 
     //Coordinates of the base
     private final int baseX = 0;
     private final int baseY = 0;
 
     //Start Angle in degrees
-    private final int forearmStartAngle = 180;
-    private final int bicepStartAngle = 45;
+    public final int forearmStartAngle = 90;
+    public final int bicepStartAngle = 90;
 
 
     //Joint Limits
     private final int minInnerElbowAngle = 30;
 
-    public int radiansToEncoder(double radians){
+    public int radiansToEncoder(double radians, boolean elbow){
         double revolutions = radians / (2 * Math.PI);
-        int ticks = (int) (revolutions * ticksPerRevolution * gearRatio);
-
+        int ticks = (int) (revolutions * ticksPerRevolution);
+        if(elbow) ticks *= gearRatio;
         return ticks;
     }
+
     public double[] calculateMotorPositions(int targetX, int targetY) {
         //Calculate distance to target
         double distance = Math.sqrt(Math.pow(targetX - baseX, 2) + Math.pow(targetY - baseY, 2));
@@ -73,25 +76,28 @@ public class ArmModel {
             upperMotorAngle -= Math.toRadians(forearmStartAngle);
             lowerMotorAngle -= Math.toRadians(bicepStartAngle);
 
-            int upperMotorPosition = radiansToEncoder(upperMotorAngle);
-            int lowerMotorPosition = radiansToEncoder(lowerMotorAngle);
+            int upperMotorPosition = radiansToEncoder(upperMotorAngle, true);
+            int lowerMotorPosition = radiansToEncoder(lowerMotorAngle, false);
 
             return new double[]{upperMotorPosition, lowerMotorPosition,  wristPitch, wristRoll};
         }
     }
 
-    public float encoderToDegrees(int encoder){
-        return (float) (encoder * (360.0 / ticksPerRevolution) / gearRatio);
+    public float encoderToDegrees(int encoder, boolean elbow){
+        float degrees = (float) (encoder * (360.0 / ticksPerRevolution));
+        if(elbow) degrees /= gearRatio;
+        return degrees;
     }
     public double map(double x, double in_min, double in_max, double out_min, double out_max) {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
-    public int[] anglesToPosition(float ShoulderRot, float ElbowRot){
+    public int[] anglesToPosition(float shoulderRot, float elbowRot){
         //Using forward-kinematics, the position can be calculated
-        int elbowX = (int) (bicepLength * Math.cos(Math.toRadians(ShoulderRot)));
-        int elbowY = (int) (bicepLength * Math.sin(Math.toRadians(ShoulderRot)));
-        int wristX = (int) (elbowX + forearmLength * Math.cos(Math.toRadians(ElbowRot)));
-        int wristY = (int) (elbowY + forearmLength * Math.sin(Math.toRadians(ElbowRot)));
+        int elbowX = (int) (bicepLength * Math.cos(Math.toRadians(shoulderRot)));
+        int elbowY = (int) (bicepLength * Math.sin(Math.toRadians(shoulderRot)));
+
+        int wristX = (int) (elbowX + forearmLength * Math.cos(Math.toRadians(elbowRot)));
+        int wristY = (int) (elbowY + forearmLength * Math.sin(Math.toRadians(elbowRot)));
         return new int[]{wristX, wristY};
     }
 }

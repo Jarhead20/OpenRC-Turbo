@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 /**
  * This is a PID controller (https://en.wikipedia.org/wiki/PID_controller)
  * for your robot. Internally, it performs all the calculations for you.
@@ -31,11 +33,15 @@ public class PIDFController {
     private double lastTimeStamp;
     private double period;
 
+    private Telemetry telemetry;
+
     /**
      * The base constructor for the PIDF controller
      */
-    public PIDFController(double kp, double ki, double kd, double kf) {
+    public PIDFController(double kp, double ki, double kd, double kf, Telemetry telemetry) {
+
         this(kp, ki, kd, kf, 0, 0);
+        this.telemetry = telemetry;
     }
 
     /**
@@ -210,6 +216,7 @@ public class PIDFController {
         totalError = totalError < minIntegral ? minIntegral : Math.min(maxIntegral, totalError);
 
         // returns u(t)
+        telemetry.addData("kP", kP + " " + errorVal_p);
         return kP * errorVal_p + kI * totalError + kD * errorVal_v + kF * setPoint;
     }
 

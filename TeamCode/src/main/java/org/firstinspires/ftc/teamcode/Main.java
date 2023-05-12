@@ -64,7 +64,7 @@ public class Main extends OpMode
         );
 
         drive.update();
-
+        telemetry.update();
 
     }
 
