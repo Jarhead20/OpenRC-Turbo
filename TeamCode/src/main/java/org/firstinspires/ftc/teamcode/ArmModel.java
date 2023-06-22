@@ -52,7 +52,7 @@ public class ArmModel {
 
             //Find the motor angles (if statement to make sure the arm goes overarm)
             if (targetX < baseX) {
-                wristRoll = 0;
+                wristRoll = -1;
                 //Calculate lower motor angle
                 lowerMotorAngle = hypotenuseAngle - Math.asin((Math.sin(innerElbowAngle) * forearmLength) / distance);
                 //Calculate upper motor angle
@@ -68,7 +68,7 @@ public class ArmModel {
                 //Calculate upper motor angle
                 upperMotorAngle = Math.PI - (Math.PI - innerElbowAngle) - (Math.PI - lowerMotorAngle);
                 //Calculate wrist pitch (0-1)
-                wristPitch = 1-map(upperMotorAngle, -3*Math.PI/4, Math.PI, 0, 1) - 0.1;
+                wristPitch = 1-map(upperMotorAngle, -3*Math.PI/4, Math.PI, -1, 1) - 0.1;
             }
 
             //calculate target encoder position

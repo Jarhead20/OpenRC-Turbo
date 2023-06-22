@@ -26,8 +26,8 @@ public class Arm {
     public DcMotorEx shoulderMotor;
     public DcMotorEx elbowMotor;
     public Servo gripper;
-    private Servo pitch;
-    private Servo roll;
+    private Servo servo1;
+    private Servo servo2;
     private double armX = 0;
     private double armY = 0;
     private double targetX = 0;
@@ -64,9 +64,9 @@ public class Arm {
         elbowMotor = map.get(DcMotorEx.class, "arm1");
         gripper = map.get(Servo.class, "gripper");
 
-        pitch = map.get(Servo.class, "pitch");
-        roll = map.get(Servo.class, "roll");
-        roll.setDirection(Servo.Direction.REVERSE);
+        servo1 = map.get(Servo.class, "Servo2");
+        servo2 = map.get(Servo.class, "Servo1");
+//        servo2.setDirection(Servo.Direction.REVERSE);
 
         shoulderMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         elbowMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -76,7 +76,7 @@ public class Arm {
         shoulderMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         elbowMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        elbowMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        elbowMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        elbowMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     public void armPIDF(int targetShoulderTicks, int targetElbowTicks) {
@@ -186,7 +186,7 @@ public class Arm {
         reportCurrentPosition();
     }
 
-    public void moveTo(Vector2 vec){
+    public boolean moveTo(Vector2 vec){
         //TODO: Add Range of Motion Constraints
 
         double[] angles = model.calculateMotorPositions((int)vec.x, (int)vec.y);
@@ -194,7 +194,7 @@ public class Arm {
         targetY = vec.y;
         if (angles == null){
             telemetry.addData("null", "null");
-            return;
+            return false;
         }
         if (angles[1] < 0){
             telemetry.addLine("less than zero");
@@ -205,7 +205,7 @@ public class Arm {
         targetElbowAngle = -angles[0];
 
         shoulderMotor.setTargetPosition((int)targetShoulderAngle);
-        elbowMotor.setTargetPosition((int)-targetElbowAngle);
+        elbowMotor.setTargetPosition((int)targetElbowAngle);
         telemetry.addData("t1", targetShoulderAngle);
         telemetry.addData("t2", targetElbowAngle);
         telemetry.addData("c1", shoulderMotor.getCurrentPosition());
@@ -214,19 +214,35 @@ public class Arm {
         elbowMotor.setPower(1.0);
         shoulderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        int shoulderX = (int) (405 * Math.cos(Math.toRadians(model.encoderToDegrees(shoulderMotor.getCurrentPosition(), false) + + model.bicepStartAngle)));
-        int shoulderY = (int) (405 * Math.sin(Math.toRadians(model.encoderToDegrees(shoulderMotor.getCurrentPosition(), false) + + model.bicepStartAngle)));
-        int elbowX = (int) (405 * Math.cos(Math.toRadians(model.encoderToDegrees(elbowMotor.getCurrentPosition(), true) + + model.forearmStartAngle)));
-        int elbowY = (int) (405 * Math.sin(Math.toRadians(model.encoderToDegrees(elbowMotor.getCurrentPosition(), true) + + model.forearmStartAngle)));
+        int shoulderX = (int) (405.0 * Math.cos(Math.toRadians(model.encoderToDegrees(shoulderMotor.getCurrentPosition(), false) + + model.bicepStartAngle)));
+        int shoulderY = (int) (405.0 * Math.sin(Math.toRadians(model.encoderToDegrees(shoulderMotor.getCurrentPosition(), false) + + model.bicepStartAngle)));
+        int elbowX = (int) (405.0 * Math.cos(Math.toRadians(model.encoderToDegrees(elbowMotor.getCurrentPosition(), true) + + model.forearmStartAngle)));
+        int elbowY = (int) (405.0 * Math.sin(Math.toRadians(model.encoderToDegrees(elbowMotor.getCurrentPosition(), true) + + model.forearmStartAngle)));
         telemetry.addData("elbowX", elbowX);
         telemetry.addData("shoulderX", shoulderX);
         telemetry.addData("elbowY", elbowY);
         telemetry.addData("shoulderY", shoulderY);
         telemetry.addData("shoulderAngle", model.encoderToDegrees(shoulderMotor.getCurrentPosition(), false) + + model.bicepStartAngle);
+        double roll = (angles[3]+1.0)*180.0-180.0;
+
+//.        double roll = (gamepad2.right_stick_x + 1) * 180 - 180;
+        double pitch = (angles[2])*180.0-180.0;
+//        double pitch = (gamepad2.right_stick_y + 1) * 180 - 180;
+        double servo1Position = (roll + pitch) / 2;
+        double servo2Position = (roll - pitch) / 2;
+        servo1Position = (servo1Position + 180.0) / 360.0;
+        servo2Position = (servo2Position + 180.0) / 360.0;
+        telemetry.addData("servo1Position", servo1Position);
+        telemetry.addData("servo2Position", servo2Position);
+        servo1.setPosition(servo1Position);
+//        servo1.setPosition(0.5);
+        servo2.setPosition(servo2Position);
+//        servo2.setPosition(0.5);
 //        armPIDF((int) targetShoulderAngle, (int) targetElbowAngle);
 //        pitch.setPosition(1-angles[2]);
 //        telemetry.addData("Pitch", angles[2]);
 //        roll.setPosition(angles[3]);
+        return true;
     }
 
     public void reportCurrentPosition(){
@@ -260,8 +276,8 @@ public class Arm {
         double gradient2 = (y-y2)/4;
         double newx = Range.clip((runtime.seconds()*gradient1)+x2, Math.min(x, x2), Math.max(x, x2));
         double newy = Range.clip((runtime.seconds()*gradient2)+y2, Math.min(y, y2), Math.max(y, y2));
-        pitch.setPosition(newx);
-        roll.setPosition(newy);
+//        pitch.setPosition(newx);
+//        roll.setPosition(newy);
     }
 
     public void setPower(double shoulder, double elbow){
