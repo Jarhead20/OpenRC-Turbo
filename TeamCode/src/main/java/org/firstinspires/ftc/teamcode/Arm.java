@@ -1,4 +1,6 @@
 package org.firstinspires.ftc.teamcode;
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.gamepad2;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -14,14 +16,11 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 @Config
 public class Arm {
 
+    // things for PIDF controller
     public static double p1 = 0, i1 = 0, d1 = 0, f1 = 3; //shoulder
     public static double p2 = 0, i2 = 0, d2 = 0, f2 = -5.0; //elbow
-
-    // things for PIDF controller
     private PIDFController shoulderController;
     private PIDFController elbowController;
-
-
 
     public DcMotorEx shoulderMotor;
     public DcMotorEx elbowMotor;
@@ -83,13 +82,13 @@ public class Arm {
         shoulderController.setPIDF(p1, i1, d1, f1);
         elbowController.setPIDF(p2, i2, d2, f2);
 
-        double shoulderPower = shoulderCalculatePIDF(shoulderMotor, elbowMotor, targetShoulderTicks, targetElbowTicks);
+//        double shoulderPower = shoulderCalculatePIDF(shoulderMotor, elbowMotor, targetShoulderTicks, targetElbowTicks);
         double elbowPower = elbowCalculatePIDF(elbowMotor, targetElbowTicks);
         telemetry.addData("elbowCurrentPower", elbowMotor.getPower());
         telemetry.addData("shoulderCurrentPower", shoulderMotor.getPower());
         telemetry.addData("shoulderAngle", model.encoderToDegrees(shoulderMotor.getCurrentPosition(), false)+model.bicepStartAngle);
         telemetry.addData("elbowAngle", model.encoderToDegrees(elbowMotor.getCurrentPosition(), true)+model.forearmStartAngle);
-        telemetry.addData("shoulderPower", shoulderPower);
+//        telemetry.addData("shoulderPower", shoulderPower);
         telemetry.addData("elbowPower", elbowPower);
         telemetry.addData("shoulderCurrentTicks", shoulderMotor.getCurrentPosition());
         telemetry.addData("elbowCurrentTicks", elbowMotor.getCurrentPosition());
@@ -97,10 +96,10 @@ public class Arm {
         telemetry.addData("elbowTargetTicks", targetElbowTicks);
 
 
-        shoulderMotor.setPower(shoulderPower/100.0);
+//        shoulderMotor.setPower(shoulderPower/100.0);
         elbowMotor.setPower(elbowPower/100.0);
     }
-    private double shoulderCalculatePIDF(DcMotorEx shoulder, DcMotorEx elbow, int targetShoulderTicks, int targetElbowTicks) {
+    private double shoulderCalculatePIDF(DcMotorEx shoulder, DcMotorEx elbow, int targetShoulderTicks) {
         double motorPID = shoulderController.calculate(shoulder.getCurrentPosition(), targetShoulderTicks);
         double forwardFeed = Math.cos(Math.toRadians(model.encoderToDegrees(shoulder.getCurrentPosition(), false)+model.bicepStartAngle));
         forwardFeed += Math.cos(Math.toRadians(model.encoderToDegrees(elbow.getCurrentPosition(), true)+model.forearmStartAngle))/2.0;
@@ -225,9 +224,9 @@ public class Arm {
         telemetry.addData("shoulderAngle", model.encoderToDegrees(shoulderMotor.getCurrentPosition(), false) + + model.bicepStartAngle);
         double roll = (angles[3]+1.0)*180.0-180.0;
 
-//.        double roll = (gamepad2.right_stick_x + 1) * 180 - 180;
+//        double roll = gamepad2.right_stick_x * 180;
         double pitch = (angles[2])*180.0-180.0;
-//        double pitch = (gamepad2.right_stick_y + 1) * 180 - 180;
+        //double pitch = (gamepad2.right_stick_y + 1) * 180 - 180;
         double servo1Position = (roll + pitch) / 2;
         double servo2Position = (roll - pitch) / 2;
         servo1Position = (servo1Position + 180.0) / 360.0;
