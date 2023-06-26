@@ -7,7 +7,6 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -20,35 +19,8 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 @Config
-@Autonomous(group = "drive")
-public class AutoPark extends LinearOpMode {
-
-    OpenCvCamera camera;
-    AprilTagDetectionPipeline aprilTagDetectionPipeline;
-
-    static final double FEET_PER_METER = 1;
-
-    // Lens intrinsics
-    // UNITS ARE PIXELS
-    // NOTE: this calibration is for the C920 webcam at 800x448.
-    // You will need to do your own calibration for other configurations!
-    double fx = 578.272;
-    double fy = 578.272;
-    double cx = 402.145;
-    double cy = 221.506;
-
-    // UNITS ARE METERS
-    double tagsize = 0.166;
-    int numFramesWithoutDetection = 0;
-
-    final float DECIMATION_HIGH = 3;
-    final float DECIMATION_LOW = 2;
-    final float THRESHOLD_HIGH_DECIMATION_RANGE_METERS = 1.0f;
-    final int THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION = 4;
-
-    public SampleMecanumDrive drive;
-    public Drive d;
-
+@Autonomous(name = "AutoPark", group = "drive")
+public class AutoPark extends AutoOp {
     Trajectory signalOne;
     Trajectory signalTwo;
     Trajectory signalThree;
@@ -63,7 +35,10 @@ public class AutoPark extends LinearOpMode {
 
     ElapsedTime timer = new ElapsedTime();
 
-    int cameraMonitorViewId;
+    public AutoPark() {
+        super();
+
+    }
 
     @Override
     public void runOpMode() throws InterruptedException {

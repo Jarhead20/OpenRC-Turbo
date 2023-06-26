@@ -22,34 +22,7 @@ import java.util.ArrayList;
 
 @Config
 @Autonomous(group = "drive")
-public class AutoLeft extends LinearOpMode {
-
-    public SampleMecanumDrive drive;
-    public Drive d;
-
-    OpenCvCamera camera;
-    AprilTagDetectionPipeline aprilTagDetectionPipeline;
-
-    static final double FEET_PER_METER = 1;
-
-    // Lens intrinsics
-    // UNITS ARE PIXELS
-    // NOTE: this calibration is for the C920 webcam at 800x448.
-    // You will need to do your own calibration for other configurations!
-    double fx = 578.272;
-    double fy = 578.272;
-    double cx = 402.145;
-    double cy = 221.506;
-
-    // UNITS ARE METERS
-    double tagsize = 0.166;
-    int numFramesWithoutDetection = 0;
-
-    final float DECIMATION_HIGH = 3;
-    final float DECIMATION_LOW = 2;
-    final float THRESHOLD_HIGH_DECIMATION_RANGE_METERS = 1.0f;
-    final int THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION = 4;
-
+public class AutoLeft extends AutoOp {
     Trajectory traj;
     Trajectory park1;
     Trajectory park2;
@@ -68,19 +41,10 @@ public class AutoLeft extends LinearOpMode {
         STOP,
     }
     AutoState autoState = AutoState.START;
-    int cameraMonitorViewId;
 
-    ElapsedTime timer = new ElapsedTime();
-    ElapsedTime timer2 = new ElapsedTime();
-    ElapsedTime timer3 = new ElapsedTime();
-    Arm arm;
-    int offset = -110;
-    int pickHeight = 200;
-    Vector2 pickup1 = new Vector2(-450+offset, pickHeight);
-    Vector2 pickupGrab = new Vector2(-600+offset, pickHeight);
-    Vector2 pickupUp = new Vector2(-500+offset, 400);
-    Vector2 depositLoc = new Vector2(100, 690);
-    double downAmount = 30;
+    public AutoLeft() {
+        super(-110, 200);
+    }
 
     @Override
     public void runOpMode() throws InterruptedException {
