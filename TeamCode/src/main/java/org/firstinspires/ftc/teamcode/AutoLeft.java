@@ -22,7 +22,7 @@ import java.util.ArrayList;
 
 @Config
 @Autonomous(group = "drive")
-public class AutoLeft extends AutoOp {
+public class AutoLeft extends AutoOpMoving {
     Trajectory traj;
     Trajectory park1;
     Trajectory park2;

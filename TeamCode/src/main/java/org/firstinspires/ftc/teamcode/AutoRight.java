@@ -21,7 +21,7 @@ import java.util.ArrayList;
 
 @Config
 @Autonomous(name = "AutoRight", group = "drive")
-public class AutoRight extends AutoOp {
+public class AutoRight extends AutoOpMoving {
 
     Trajectory traj;
     Trajectory park1;

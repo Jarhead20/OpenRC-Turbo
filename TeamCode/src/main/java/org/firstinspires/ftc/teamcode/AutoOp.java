@@ -34,28 +34,7 @@ public abstract class AutoOp extends LinearOpMode {
 
     int cameraMonitorViewId;
 
-    int offset;
-    int pickHeight;
     ElapsedTime timer = new ElapsedTime();
-    ElapsedTime timer2 = new ElapsedTime();
-    ElapsedTime timer3 = new ElapsedTime();
-    Arm arm;
-    double downAmount = 30;
-
-    Vector2 pickup1;
-    Vector2 pickupGrab;
-    Vector2 pickupUp;
-    Vector2 depositLoc;
-
-    public AutoOp(int offset, int pickHeight) {
-        this.offset = offset;
-        this.pickHeight = pickHeight;
-
-        pickup1 = new Vector2(-450+offset, pickHeight);
-        pickupGrab = new Vector2(-600+offset, pickHeight);
-        pickupUp = new Vector2(-500+offset, 400);
-        depositLoc = new Vector2(170, 690);
-    }
 
     public AutoOp() {
         // for AutoPark since it does not need offset or pickHeight

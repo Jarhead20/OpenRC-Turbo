@@ -35,11 +35,6 @@ public class AutoPark extends AutoOp {
 
     ElapsedTime timer = new ElapsedTime();
 
-    public AutoPark() {
-        super();
-
-    }
-
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
