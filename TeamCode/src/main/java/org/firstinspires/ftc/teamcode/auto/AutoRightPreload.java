@@ -1,59 +1,22 @@
 package org.firstinspires.ftc.teamcode.auto;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Arm;
 import org.firstinspires.ftc.teamcode.Vector2;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.openftc.apriltag.AprilTagDetection;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 
 @Config
 @Autonomous(name = "AutoRightPreload", group = "drive")
 public class AutoRightPreload extends AutoOpMoving {
-    Trajectory traj;
-    Trajectory park1;
-    Trajectory park2;
-    Trajectory park3;
-
-    public enum AutoState {
-        START,
-        PARK1,
-        ARMUP,
-        PRELOAD,
-        CYCLE1,
-        CYCLE2,
-        CYCLE3,
-        CYCLE4,
-        PARK2,
-        STOP,
-    }
-    AutoState autoState = AutoState.START;
-
-    public AutoRightPreload() {
-        super(-50, 215);
-    }
-
     @Override
-    public void runOpMode() throws InterruptedException {
-        arm = new Arm(hardwareMap, telemetry, timer);
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        drive = new SampleMecanumDrive(hardwareMap);
-        drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
+    protected void setupTrajectories() {
         traj = drive.trajectoryBuilder(new Pose2d(-37.42, 66.46, Math.toRadians(180.00)))
                 .splineToSplineHeading(new Pose2d(-36.03, 50.73, Math.toRadians(209.00)), Math.toRadians(-82.65))
                 .splineToSplineHeading(new Pose2d(-34.00, 3.75, Math.toRadians(173.00)), Math.toRadians(-84.38))
@@ -70,30 +33,19 @@ public class AutoRightPreload extends AutoOpMoving {
                 .splineTo(new Vector2d(-31.65, 11.92), Math.toRadians(2.16))
                 .splineTo(new Vector2d(-11.92, 19.79), Math.toRadians(88.73))
                 .build();
-        arm.closeGripper();
+    }
 
-        cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
+    public AutoRightPreload() {
+        super(-50, 215);
+    }
 
-        camera.setPipeline(aprilTagDetectionPipeline);
-        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-            @Override
-            public void onOpened() {
-                camera.startStreaming(1280,720, OpenCvCameraRotation.UPRIGHT);
-                FtcDashboard.getInstance().startCameraStream(camera, 500);
-            }
+    @Override
+    public void runOpMode() throws InterruptedException {
+        initComponents();
 
-            @Override
-            public void onError(int errorCode) {
-
-            }
-        });
         waitForStart();
         timer.reset();
-
         telemetry.setMsTransmissionInterval(50);
-
 
         int detection = 0;
         while (opModeIsActive() && timer.time() <= 30) {
@@ -101,30 +53,30 @@ public class AutoRightPreload extends AutoOpMoving {
             ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
             switch (autoState) {
                 case START:
-                    if (detections != null) {
-                        telemetry.addData("FPS", camera.getFps());
-                        telemetry.addData("Overhead ms", camera.getOverheadTimeMs());
-                        telemetry.addData("Pipeline ms", camera.getPipelineTimeMs());
+                    if (detections == null)
+                        break;
+                    telemetry.addData("FPS", camera.getFps());
+                    telemetry.addData("Overhead ms", camera.getOverheadTimeMs());
+                    telemetry.addData("Pipeline ms", camera.getPipelineTimeMs());
 
-                        // If we don't see any tags
-                        if (detections.size() == 0) {
-                            numFramesWithoutDetection++;
-                            if (numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION)
-                                aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
-                        } else {
-                            numFramesWithoutDetection = 0;
-                            // If the target is within 1 meter, turn on high decimation to
-                            // increase the frame rate
-                            if (detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS)
-                                aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
-                            for (AprilTagDetection detection2 : detections) {
-                                detection = detection2.id;
-                            }
+                    // If we don't see any tags
+                    if (detections.size() == 0) {
+                        numFramesWithoutDetection++;
+                        if (numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION)
+                            aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
+                    } else {
+                        numFramesWithoutDetection = 0;
+                        // If the target is within 1 meter, turn on high decimation to
+                        // increase the frame rate
+                        if (detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS)
+                            aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
+                        for (AprilTagDetection detection2 : detections) {
+                            detection = detection2.id;
                         }
                     }
-                    if(detection != 0)
-                        autoState = AutoState.ARMUP;
-                    break;
+                    if(detection == 0)
+                        break;
+                    autoState = AutoState.ARMUP;
                 case ARMUP:
                     arm.setPower(0.3, 0.5);
                     arm.moveTo(new Vector2(-20, 830));
@@ -172,7 +124,6 @@ public class AutoRightPreload extends AutoOpMoving {
                     break;
                 case PARK2:
                     arm.openGripper();
-
                     arm.shoulderMotor.setTargetPosition(0);
                     arm.elbowMotor.setTargetPosition(0);
                     arm.shoulderMotor.setPower(0.5);
@@ -201,7 +152,6 @@ public class AutoRightPreload extends AutoOpMoving {
                     break;
 
             }
-
 
 //            drive.update();
             arm.reportCurrentPosition();
@@ -245,7 +195,7 @@ public class AutoRightPreload extends AutoOpMoving {
                 }
                 break;
             case GRAB:
-                if(arm.atTarget(pickupGrab.lower(lower), 5) && !oneTime){
+                if(arm.atTarget(pickupGrab.lower(lower), 7) && !oneTime){
                     oneTime = true;
                     timer2.reset();
                 }
@@ -270,11 +220,5 @@ public class AutoRightPreload extends AutoOpMoving {
                 break;
         }
         return false;
-    }
-
-    private boolean inRange(ElapsedTime timer, double time){
-        double low = time-0.1;
-        double high = time+0.1;
-        return (timer.seconds() >= low && timer.seconds() <= high);
     }
 }

@@ -1,59 +1,21 @@
 package org.firstinspires.ftc.teamcode.auto;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Arm;
 import org.firstinspires.ftc.teamcode.Vector2;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.openftc.apriltag.AprilTagDetection;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 
 @Config
 @Autonomous(group = "drive")
 public class AutoLeftPreload extends AutoOpMoving {
-    Trajectory traj;
-    Trajectory park1;
-    Trajectory park2;
-    Trajectory park3;
-
-    public enum AutoState {
-        START,
-        PARK1,
-        ARMUP,
-        PRELOAD,
-        CYCLE1,
-        CYCLE2,
-        CYCLE3,
-        CYCLE4,
-        PARK2,
-        STOP,
-    }
-    AutoState autoState = AutoState.START;
-
-    public AutoLeftPreload() {
-        super(-110, 200);
-    }
-
     @Override
-    public void runOpMode() throws InterruptedException {
-        arm = new Arm(hardwareMap, telemetry, timer);
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        drive = new SampleMecanumDrive(hardwareMap);
-        drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
+    protected void setupTrajectories() {
         traj = drive.trajectoryBuilder(new Pose2d(35.29, 66.46, Math.toRadians(180.00)))
                 .splineToSplineHeading(new Pose2d(35.13, 46.60, Math.toRadians(185.71)), Math.toRadians(-86.42))
                 .splineToSplineHeading(new Pose2d(38.0, 5.00, Math.toRadians(16.00)), Math.toRadians(266.69))
@@ -70,30 +32,19 @@ public class AutoLeftPreload extends AutoOpMoving {
                 .splineTo(new Vector2d(38.09, 12.57), Math.toRadians(10.92))
                 .splineTo(new Vector2d(61.43, 23.27), Math.toRadians(86.76))
                 .build();
-        arm.closeGripper();
+    }
 
-        cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
+    public AutoLeftPreload() {
+        super(-110, 200);
+    }
 
-        camera.setPipeline(aprilTagDetectionPipeline);
-        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-            @Override
-            public void onOpened() {
-                camera.startStreaming(1280,720, OpenCvCameraRotation.UPRIGHT);
-                FtcDashboard.getInstance().startCameraStream(camera, 500);
-            }
+    @Override
+    public void runOpMode() throws InterruptedException {
+        initComponents();
 
-            @Override
-            public void onError(int errorCode) {
-
-            }
-        });
         waitForStart();
         timer.reset();
-
         telemetry.setMsTransmissionInterval(50);
-
 
         int detection = 0;
         while (opModeIsActive() && timer.time() <= 30) {
@@ -270,11 +221,5 @@ public class AutoLeftPreload extends AutoOpMoving {
                 break;
         }
         return false;
-    }
-
-    private boolean inRange(ElapsedTime timer, double time){
-        double low = time-0.1;
-        double high = time+0.1;
-        return (timer.seconds() >= low && timer.seconds() <= high);
     }
 }
