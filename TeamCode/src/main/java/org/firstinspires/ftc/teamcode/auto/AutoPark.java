@@ -25,6 +25,14 @@ public class AutoPark extends AutoOp {
     Trajectory signalTwo;
     Trajectory signalThree;
 
+    @Override
+    protected void setupTrajectories() {
+        signalOne = drive.trajectoryBuilder(new Pose2d(0.00, -0.00, Math.toRadians(1.97)))
+                .splineTo(new Vector2d(30.98, 8.74), Math.toRadians(89.08))
+                .splineTo(new Vector2d(38.49, 21.74), Math.toRadians(-6.71))
+                .build();
+    }
+
     public enum AutoState {
         PARK_CV,
         PARK,
@@ -46,7 +54,6 @@ public class AutoPark extends AutoOp {
         drive.setPoseEstimate(startPose);
 //        doCV();
 
-
         cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
@@ -64,15 +71,6 @@ public class AutoPark extends AutoOp {
 
             }
         });
-//        signalOne = drive.trajectoryBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
-//                .splineTo(new Vector2d(-13.38, 34.38), Math.toRadians(171.87))
-//                .build();
-//        signalTwo = drive.trajectoryBuilder(new Pose2d(-0.23, 0, Math.toRadians(-90.00)))
-//                .splineTo(new Vector2d(0.69, 34.62), Math.toRadians(88.99))
-//                .build();
-//        signalThree = drive.trajectoryBuilder(new Pose2d(0.23, 0, Math.toRadians(-90.00)))
-//                .splineTo(new Vector2d(11.31, 35.08), Math.toRadians(-1.85))
-//                .build();
 
         waitForStart();
         telemetry.setMsTransmissionInterval(50);
@@ -106,31 +104,11 @@ public class AutoPark extends AutoOp {
                                 switch (detection) {
                                     case 10:
                                         telemetry.addData("Signal", "1");
-//                                        signalOne = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
-////                                                .splineTo(new Vector2d(34.38,-24), Math.toRadians(90))
-////                                                .build();
-//                                                .strafeLeft(30)
-////                                                .turn(Math.toRadians(-90))
-//                                                .back(24)
-//                                                .turn(Math.toRadians(90))
-//                                                .forward(10)
-//                                                .build();
-                                        signalOne = drive.trajectoryBuilder(new Pose2d(0.00, -0.00, Math.toRadians(1.97)))
-                                                .splineTo(new Vector2d(30.98, 8.74), Math.toRadians(89.08))
-                                                .splineTo(new Vector2d(38.49, 21.74), Math.toRadians(-6.71))
-                                                .build();
                                         drive.followTrajectory(signalOne);
                                         autoState = AutoState.PARK;
                                         break;
                                     case 11:
                                         telemetry.addData("Signal", "2");
-//                                        signalTwo = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
-////                                                .splineTo(new Vector2d(34.62, 0), Math.toRadians(0))
-//                                                .strafeLeft(30)
-////                                                .turn(Math.toRadians(-90))
-//                                                .turn(Math.toRadians(90))
-//                                                .forward(10)
-//                                                .build();
 
                                         signalTwo = drive.trajectoryBuilder(new Pose2d(-0.07, 0.22, Math.toRadians(-0.50)))
                                                 .splineTo(new Vector2d(40.00, -0.00), Math.toRadians(6.01))
@@ -141,15 +119,6 @@ public class AutoPark extends AutoOp {
                                         break;
                                     case 21:
                                         telemetry.addData("Signal", "3");
-//                                        signalThree = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(-90.00)))
-////                                                .splineTo(new Vector2d(35.08,24), Math.toRadians(-90))
-////                                                .turn(Math.toRadians(90))
-//                                                .strafeLeft(30)
-////                                                .turn(Math.toRadians(-90))
-//                                                .forward(24)
-//                                                .turn(Math.toRadians(90))
-//                                                .forward(10)
-//                                                .build();
 
                                         signalThree = drive.trajectoryBuilder(new Pose2d(-0.07, 0.36, Math.toRadians(0.87)))
                                                 .splineTo(new Vector2d(25.78, -0.07), Math.toRadians(2.86))

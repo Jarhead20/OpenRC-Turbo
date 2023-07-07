@@ -61,7 +61,6 @@ public abstract class AutoOpMoving extends AutoOp {
         depositLoc = new Vector2(170, 690);
     }
 
-    @Override
     protected abstract void setupTrajectories();
 
     void initComponents() {
