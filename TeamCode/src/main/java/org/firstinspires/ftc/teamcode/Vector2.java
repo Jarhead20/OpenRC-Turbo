@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 public class Vector2 {
-    double x = 0;
+    public double x = 0;
     double y = 0;
-    Vector2(double x, double y){
+    public Vector2(double x, double y){
         this.x = x;
         this.y = y;
     }
