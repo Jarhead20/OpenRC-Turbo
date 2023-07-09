@@ -167,7 +167,7 @@ public class Arm {
 
 
         Vector2 vec = armPoses[index];
-        vec.x += gamepad.left_stick_y*10;
+        vec.x -= gamepad.left_stick_y*10;
         vec.y -= gamepad.right_stick_y*10;
 
         if(!moveTo(vec)){
