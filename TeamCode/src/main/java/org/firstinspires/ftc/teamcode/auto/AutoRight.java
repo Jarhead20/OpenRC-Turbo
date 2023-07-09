@@ -17,9 +17,9 @@ import java.util.ArrayList;
 public class AutoRight extends AutoOpMoving {
     @Override
     protected void setupTrajectories() {
-        traj = drive.trajectoryBuilder(new Pose2d(-37.42, 66.46, Math.toRadians(180.00)))
-                .splineToSplineHeading(new Pose2d(-36.03, 50.73, Math.toRadians(209.00)), Math.toRadians(-82.65))
-                .splineToSplineHeading(new Pose2d(-34.00, 3.75, Math.toRadians(173.00)), Math.toRadians(-84.38))
+        traj = drive.trajectoryBuilder(new Pose2d(-29.33, 65.30, Math.toRadians(-90.00)))
+                .splineTo(new Vector2d(-36.16, 38.61), Math.toRadians(267.81))
+                .splineToSplineHeading(new Pose2d(-34.36, 3.29, Math.toRadians(173.00)), Math.toRadians(-84.38))
                 .build();
         park3 = drive.trajectoryBuilder(traj.end())
                 .splineTo(new Vector2d(-36.68, 12.96), Math.toRadians(166.66))
@@ -47,7 +47,6 @@ public class AutoRight extends AutoOpMoving {
         timer.reset();
         telemetry.setMsTransmissionInterval(50);
         drive.setPoseEstimate(traj.start());
-
 
         int detection = 0;
         while (opModeIsActive() && timer.time() <= 30) {
