@@ -122,6 +122,9 @@ public class Arm {
     public void inputGamepad(Gamepad gamepad){
         if (gamepad.b) openGripper();
         if (gamepad.a) closeGripper();
+        if(gamepad.right_bumper) { //reset all arm positions
+            for (Vector2 armPose : armPoses) armPose.reset();
+        }
 
         if (gamepad.dpad_up){ // high pole
             position = 0;
