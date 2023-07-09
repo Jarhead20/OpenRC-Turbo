@@ -84,7 +84,7 @@ public class ArmModel {
             int upperMotorPosition = radiansToEncoder(upperMotorAngle, true);
             int lowerMotorPosition = radiansToEncoder(lowerMotorAngle, false);
 
-            if(targetY < baseY && targetX < baseX){
+            if(targetY < BASEY && targetX < BASEX){
                 upperMotorPosition += TICKSPERREVOLUTION * GEARRATIO;
                 lowerMotorPosition += TICKSPERREVOLUTION;
             }
