@@ -216,7 +216,6 @@ public class PIDFController {
         totalError = totalError < minIntegral ? minIntegral : Math.min(maxIntegral, totalError);
 
         // returns u(t)
-        telemetry.addData("kP", kP + " " + errorVal_p);
         return kP * errorVal_p + kI * totalError + kD * errorVal_v + kF * setPoint;
     }
 

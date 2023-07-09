@@ -67,7 +67,7 @@ public class AutoRight extends LinearOpMode {
         PARK2,
         STOP,
     }
-    AutoState autoState = AutoState.START;
+    AutoState autoState = AutoState.PARK1;
     int cameraMonitorViewId;
 
     ElapsedTime timer = new ElapsedTime();
@@ -88,10 +88,12 @@ public class AutoRight extends LinearOpMode {
         drive = new SampleMecanumDrive(hardwareMap);
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        traj = drive.trajectoryBuilder(new Pose2d(-37.42, 66.46, Math.toRadians(180.00)))
-                .splineToSplineHeading(new Pose2d(-36.03, 50.73, Math.toRadians(209.00)), Math.toRadians(-82.65))
-                .splineToSplineHeading(new Pose2d(-34.00, 3.75, Math.toRadians(173.00)), Math.toRadians(-84.38))
+        traj = drive.trajectoryBuilder(new Pose2d(-29.33, 65.30, Math.toRadians(-90.00)))
+                .splineTo(new Vector2d(-36.16, 38.61), Math.toRadians(267.81))
+                .splineToSplineHeading(new Pose2d(-34.36, 3.29, Math.toRadians(173.00)), Math.toRadians(-84.38))
                 .build();
+
+
         park3 = drive.trajectoryBuilder(traj.end())
                 .splineTo(new Vector2d(-36.68, 12.96), Math.toRadians(166.66))
                 .splineTo(new Vector2d(-61.04, 20.18), Math.toRadians(91.91))
@@ -127,9 +129,9 @@ public class AutoRight extends LinearOpMode {
         timer.reset();
 
         telemetry.setMsTransmissionInterval(50);
+        drive.setPoseEstimate(traj.start());
 
-
-        int detection = 0;
+        int detection = 10;
         while (opModeIsActive() && timer.time() <= 30) {
             if(isStopRequested()) return;
             ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
@@ -157,24 +159,24 @@ public class AutoRight extends LinearOpMode {
                         }
                     }
                     if(detection != 0)
-                        autoState = AutoState.ARMUP;
+                        autoState = AutoState.PARK1;
                     break;
                 case ARMUP:
                     arm.setPower(0.3, 0.5);
-                    arm.moveTo(new Vector2(-20, 830));
+//                    arm.moveTo(new Vector2(-20, 830));
                     if(arm.atTarget(new Vector2(-20, 830))) {
                         autoState = AutoState.PARK1;
                     }
                     break;
                 case PARK1:
-                    drive.setPoseEstimate(traj.start());
+
                     drive.followTrajectory(traj);
 //                    arm.moveTo(236, 768);
                     //up 236, 768
                     //down -620, 300
                     if(!drive.isBusy()){
-                        arm.moveTo(new Vector2(depositLoc.x-30, 800));
-                        autoState = AutoState.PRELOAD;
+//                        arm.moveTo(new Vector2(depositLoc.x-30, 800));
+//                        autoState = AutoState.PRELOAD;
                         timer3.reset();
 
                     }
@@ -182,7 +184,7 @@ public class AutoRight extends LinearOpMode {
                 case PRELOAD:
                     if(arm.atTarget(new Vector2(depositLoc.x-30, 800), 7)){
                         if(timer3.seconds() > 1){
-                            arm.moveTo(depositLoc);
+//                            arm.moveTo(depositLoc);
                             autoState = AutoState.CYCLE1;
                         }
                     }
@@ -266,14 +268,14 @@ public class AutoRight extends LinearOpMode {
                 if(timer2.seconds() > 0.2 && oneTime){
                     arm.openGripper();
                     if(timer2.seconds() > 0.5){
-                        arm.moveTo(pickup1.lower(lower));
+//                        arm.moveTo(pickup1.lower(lower));
                         cycleState = Cycles.DOWN;
                     }
                 }
                 break;
             case DOWN:
                 if(arm.atTarget(pickup1.lower(lower), 7)){
-                    arm.moveTo(pickupGrab.lower(lower));
+//                    arm.moveTo(pickupGrab.lower(lower));
                     oneTime = false;
                     cycleState = Cycles.GRAB;
                 }
@@ -287,7 +289,7 @@ public class AutoRight extends LinearOpMode {
                 if(timer2.seconds() > 0.2 && oneTime){
                     arm.closeGripper();
                     if(timer2.seconds() > 0.5){
-                        arm.moveTo(pickupUp);
+//                        arm.moveTo(pickupUp);
                         oneTime = false;
                         cycleState = Cycles.UP;
                     }
@@ -295,7 +297,7 @@ public class AutoRight extends LinearOpMode {
                 break;
             case UP:
                 if(arm.atTarget(pickupUp, 50)){
-                    arm.moveTo(depositLoc);
+//                    arm.moveTo(depositLoc);
                 }
                 if(arm.atTarget(depositLoc)) {
                     cycleState = Cycles.DEPOSIT;

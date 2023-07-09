@@ -162,7 +162,7 @@ public class AutoLeftPreload extends LinearOpMode {
                     break;
                 case ARMUP:
                     arm.setPower(0.3, 0.6);
-                    arm.moveTo(new Vector2(-20, 830));
+//                    arm.moveTo(new Vector2(-20, 830));
                     if(arm.atTarget(new Vector2(-20, 830))) {
                         autoState = AutoState.PARK1;
                     }
@@ -174,7 +174,7 @@ public class AutoLeftPreload extends LinearOpMode {
                     //up 236, 768
                     //down -620, 300
                     if(!drive.isBusy()){
-                        arm.moveTo(new Vector2(depositLoc.x-50, 800));
+//                        arm.moveTo(new Vector2(depositLoc.x-50, 800));
                         autoState = AutoState.PRELOAD;
                         timer3.reset();
 
@@ -183,7 +183,7 @@ public class AutoLeftPreload extends LinearOpMode {
                 case PRELOAD:
                     if(arm.atTarget(new Vector2(depositLoc.x-50, 800), 7)){
                         if(timer3.seconds() > 1){
-                            arm.moveTo(depositLoc);
+//                            arm.moveTo(depositLoc);
                             autoState = AutoState.PARK2;
                         }
                     }
@@ -267,14 +267,14 @@ public class AutoLeftPreload extends LinearOpMode {
                 if(timer2.seconds() > 0.2 && oneTime){
                     arm.openGripper();
                     if(timer2.seconds() > 0.5){
-                        arm.moveTo(pickup1.lower(lower));
+//                        arm.moveTo(pickup1.lower(lower));
                         cycleState = Cycles.DOWN;
                     }
                 }
                 break;
             case DOWN:
                 if(arm.atTarget(pickup1.lower(lower), 7)){
-                    arm.moveTo(pickupGrab.lower(lower));
+//                    arm.moveTo(pickupGrab.lower(lower));
                     oneTime = false;
                     cycleState = Cycles.GRAB;
                 }
@@ -288,7 +288,7 @@ public class AutoLeftPreload extends LinearOpMode {
                 if(timer2.seconds() > 0.2 && oneTime){
                     arm.closeGripper();
                     if(timer2.seconds() > 0.5){
-                        arm.moveTo(pickupUp);
+//                        arm.moveTo(pickupUp);
                         oneTime = false;
                         cycleState = Cycles.UP;
                     }
@@ -296,7 +296,7 @@ public class AutoLeftPreload extends LinearOpMode {
                 break;
             case UP:
                 if(arm.atTarget(pickupUp, 50)){
-                    arm.moveTo(depositLoc);
+//                    arm.moveTo(depositLoc);
                 }
                 if(arm.atTarget(depositLoc)) {
                     cycleState = Cycles.DEPOSIT;
