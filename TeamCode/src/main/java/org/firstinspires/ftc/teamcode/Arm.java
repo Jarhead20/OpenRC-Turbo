@@ -21,8 +21,6 @@ public class Arm {
     private PIDFController shoulderController;
     private PIDFController elbowController;
 
-
-
     public DcMotorEx shoulderMotor;
     public DcMotorEx elbowMotor;
     public Servo gripper;
@@ -83,7 +81,7 @@ public class Arm {
         shoulderController.setPIDF(p1, i1, d1, 0.0);
         elbowController.setPIDF(p2, i2, d2, 0.0);
 
-        double shoulderPower = shoulderCalculatePIDF(shoulderMotor, elbowMotor, targetShoulderTicks, targetElbowTicks);
+        double shoulderPower = shoulderCalculatePIDF(shoulderMotor, elbowMotor, targetShoulderTicks);
         double elbowPower = elbowCalculatePIDF(elbowMotor, targetElbowTicks);
         telemetry.addData("elbowCurrentPower", elbowMotor.getPower());
         telemetry.addData("shoulderCurrentPower", shoulderMotor.getPower());
@@ -100,7 +98,7 @@ public class Arm {
         shoulderMotor.setPower(shoulderPower);
         elbowMotor.setPower(elbowPower);
     }
-    private double shoulderCalculatePIDF(DcMotorEx shoulder, DcMotorEx elbow, int targetShoulderTicks, int targetElbowTicks) {
+    private double shoulderCalculatePIDF(DcMotorEx shoulder, DcMotorEx elbow, int targetShoulderTicks) {
         double motorPID = shoulderController.calculate(shoulder.getCurrentPosition(), targetShoulderTicks);
         double forwardFeed = Math.cos(Math.toRadians(model.encoderToDegrees(shoulder.getCurrentPosition(), false)+model.LOWERARMSTARTANGLE));
         forwardFeed += Math.cos(Math.toRadians(model.encoderToDegrees(elbow.getCurrentPosition(), true)+model.UPPERARMSTARTANGLE))/2.0;
@@ -182,7 +180,6 @@ public class Arm {
         telemetry.addData("army", vec.y);
 
 //            vec.x = Range.clip(vec.x, -900, -1);
-//        moveTo(vec);
         //Inverse Kinematics
 
 
