@@ -84,6 +84,11 @@ public class ArmModel {
             int upperMotorPosition = radiansToEncoder(upperMotorAngle, true);
             int lowerMotorPosition = radiansToEncoder(lowerMotorAngle, false);
 
+            if(targetY < baseY && targetX < baseX){
+                upperMotorPosition += TICKSPERREVOLUTION * GEARRATIO;
+                lowerMotorPosition += TICKSPERREVOLUTION;
+            }
+
             return new double[]{lowerMotorPosition, upperMotorPosition, wristPitch, wristRoll};
         }
     }
