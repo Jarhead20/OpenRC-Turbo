@@ -31,22 +31,20 @@ public class Arm {
     private double targetX = 0;
     private double targetY = 0;
     private double tolerance = 50;
+
     private Vector2[] armPoses = new Vector2[]{
-            new Vector2(300, 700),
-            new Vector2(-350, 200),
-            new Vector2(-350, 100),
-            new Vector2(200, 300),
-            new Vector2(-430, 200),
-            new Vector2(-10, 700),
-            new Vector2(-450, 500),
-            new Vector2(-350, 200),
+            new Vector2(200, 750), // dpad up - high pole
+            new Vector2(-350, 200), // dpad down - intake
+            new Vector2(300, 400), // dpad left - medium pole
+            new Vector2(300, 250), // dpad right - low pole
+            new Vector2(-100, 500), // 5 - high pole intermediate position
     };
 
     public int index = 0;
     public int position = 0;
     double prevX = armPoses[index].x;
     double prevY = armPoses[index].y;
-    private double targetShoulderAngle = 0; // used in PIDF, should it go up?
+    private double targetShoulderAngle = 0;
     private double targetElbowAngle = 0;
     ArmModel model = new ArmModel();
 
@@ -65,7 +63,6 @@ public class Arm {
 
         servo1 = map.get(Servo.class, "Servo2");
         servo2 = map.get(Servo.class, "Servo1");
-//        servo2.setDirection(Servo.Direction.REVERSE);
 
         shoulderMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         elbowMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -123,48 +120,34 @@ public class Arm {
     ElapsedTime armTimer = new ElapsedTime();
 
     public void inputGamepad(Gamepad gamepad){
+        if (gamepad.b) openGripper();
+        if (gamepad.a) closeGripper();
 
-        if (gamepad.b){
-            openGripper();
-        }
-        if (gamepad.a){
-            closeGripper();
-        }
-
-        if (gamepad.dpad_up){
+        if (gamepad.dpad_up){ // high pole
             position = 0;
-            index = gamepad.left_bumper ? position : position+3;
             armTimer.reset();
-        }
-
-        else if (gamepad.dpad_down){
+        } else if (gamepad.dpad_down){ // intake
             position = 1;
-            index = gamepad.left_bumper ? position : position+3;
-        }
-
-        else if (gamepad.dpad_left){
+        } else if (gamepad.dpad_left){ // medium pole
             position = 2;
-            index = gamepad.left_bumper ? position : position+3;
+        } else if (gamepad.dpad_right){ // low pole
+            position = 3;
         }
-
+        //add delay if going to a pole
         switch (position){
             case 0:
-                if(armTimer.milliseconds() < 500)
-                    index = 6;
-                else index = position;
-                break;
             case 1:
-                if(armTimer.milliseconds() < 1000)
-                    index = 7;
+            case 2:
+                if(armTimer.milliseconds() < 500)
+                    index = 4;
                 else index = position;
                 break;
-            case 2:
+            default:
                 index = position;
                 break;
         }
 
         telemetry.addData("index", index);
-
 
         Vector2 vec = armPoses[index];
         vec.x -= gamepad.left_stick_y*10;
@@ -178,10 +161,6 @@ public class Arm {
         prevY = vec.y;
         telemetry.addData("armx", vec.x);
         telemetry.addData("army", vec.y);
-
-//            vec.x = Range.clip(vec.x, -900, -1);
-        //Inverse Kinematics
-
 
         //Forward Kinematics
         reportCurrentPosition();
@@ -222,8 +201,6 @@ public class Arm {
         elbowMotor.setTargetPosition((int)targetElbowAngle);
         setPower(0.5,0.5);
         closeGripper();
-//        shoulderMotor.setPower(1.0);
-//        elbowMotor.setPower(1.0);
         shoulderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -258,15 +235,6 @@ public class Arm {
 
     public void toggleGripper(){
         gripper.setPosition(gripper.getPosition() > 0.9 ? 0 : 1.0);
-    }
-
-    public void goToServo(double x, double y, double x2, double y2){
-        double gradient1 = (x-x2)/4;
-        double gradient2 = (y-y2)/4;
-        double newx = Range.clip((runtime.seconds()*gradient1)+x2, Math.min(x, x2), Math.max(x, x2));
-        double newy = Range.clip((runtime.seconds()*gradient2)+y2, Math.min(y, y2), Math.max(y, y2));
-//        pitch.setPosition(newx);
-//        roll.setPosition(newy);
     }
 
     public void setPower(double shoulder, double elbow){
