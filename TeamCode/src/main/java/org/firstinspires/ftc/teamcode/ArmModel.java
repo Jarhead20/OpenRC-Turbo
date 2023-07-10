@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.config.Config;
+
+@Config
 public class ArmModel {
     //Distances all in mm
     public final double LOWERARMLENGTH = 405.0;
@@ -14,9 +17,9 @@ public class ArmModel {
     private final int BASEY = 0;
 
     //Start Angle in degrees
-    public final int UPPERARMSTARTANGLE = 90;
-//    public final int UPPERARMSTARTANGLE = -90;
-    public final int LOWERARMSTARTANGLE = 90;
+    public static int UPPERARMSTARTANGLE = 270;
+//    public final int UPPERARMSTARTANGLE = 90;
+    public static int LOWERARMSTARTANGLE = 130;
 //    public final int LOWERARMSTARTANGLE = 130;
 
 
@@ -54,7 +57,7 @@ public class ArmModel {
 
             //Find the motor angles (if statement to make sure the arm goes overarm)
             if (targetX < BASEX) {
-                wristRoll = -1.2;
+                wristRoll = 1;
                 //Calculate lower motor angle
                 lowerMotorAngle = hypotenuseAngle - Math.asin((Math.sin(innerElbowAngle) * UPPERARMLENGTH) / distance);
                 //Calculate upper motor angle
@@ -66,7 +69,7 @@ public class ArmModel {
 
             }
             else {
-                wristRoll = 1;
+                wristRoll = -1.2;
                 //Calculate lower motor angle
                 lowerMotorAngle = hypotenuseAngle + Math.asin((Math.sin(innerElbowAngle) * UPPERARMLENGTH) / distance);
                 //Calculate upper motor angle
@@ -87,6 +90,7 @@ public class ArmModel {
             if(targetY < BASEY && targetX < BASEX){
                 upperMotorPosition += TICKSPERREVOLUTION * GEARRATIO;
                 lowerMotorPosition += TICKSPERREVOLUTION;
+                wristPitch =  (((2*Math.PI)+(upperMotorAngle+(4*Math.PI))) * 2) - (Math.PI*4);
             }
 
             return new double[]{lowerMotorPosition, upperMotorPosition, wristPitch, wristRoll};

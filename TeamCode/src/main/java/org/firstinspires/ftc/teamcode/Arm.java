@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import java.util.concurrent.TimeUnit;
+
 @Config
 public class Arm {
 
@@ -32,12 +34,12 @@ public class Arm {
     private double targetY = 0;
     private double tolerance = 50;
 
-    private Vector2[] armPoses = new Vector2[]{
-            new Vector2(200, 750), // dpad up - high pole
-            new Vector2(-350, 200), // dpad down - intake
-            new Vector2(300, 400), // dpad left - medium pole
-            new Vector2(300, 250), // dpad right - low pole
-            new Vector2(-100, 500), // 5 - high pole intermediate position
+    public Vector2[] armPoses = new Vector2[]{
+            new Vector2(-200, 750), // dpad up - high pole
+            new Vector2(350, 200), // dpad down - intake
+            new Vector2(-300, 400), // dpad left - medium pole
+            new Vector2(-300, 250), // dpad right - low pole
+            new Vector2(100, 500), // 5 - high pole intermediate position
     };
 
     public int index = 0;
@@ -68,10 +70,17 @@ public class Arm {
         elbowMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         shoulderMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        shoulderMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        shoulderMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         shoulderMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+//        elbowMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         elbowMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        elbowMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        elbowMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        servoMixer(-180, -180);
+    }
+
+    public void resetEncoder(){
+        elbowMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        shoulderMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     public void armPIDF(int targetShoulderTicks, int targetElbowTicks) {
@@ -141,7 +150,7 @@ public class Arm {
             case 0:
             case 1:
             case 2:
-                if(armTimer.milliseconds() < 500)
+                if(armTimer.milliseconds() < 1000)
                     index = 4;
                 else index = position;
                 break;
@@ -156,7 +165,8 @@ public class Arm {
         vec.x -= gamepad.left_stick_y*10;
         vec.y -= gamepad.right_stick_y*10;
 
-        if(!moveTo(vec)){
+        if(!moveTo(vec, true)){
+//        if(!moveTo(vec, runtime.milliseconds() < 5000)){
             vec.x = prevX;
             vec.y = prevY;
         }
@@ -170,6 +180,9 @@ public class Arm {
     }
 
     public boolean moveTo(Vector2 vec){
+        return moveTo(vec, false);
+    }
+    public boolean moveTo(Vector2 vec, boolean wristOverride){
         //TODO: Add Range of Motion Constraints
 
         double[] angles = model.calculateMotorPositions((int)vec.x, (int)vec.y);
@@ -179,10 +192,6 @@ public class Arm {
             telemetry.addData("null", "null");
             return false;
         }
-        if (vec.y <= 0){
-            telemetry.addLine("less than zero");
-            return false;
-        }
 
         targetShoulderAngle = angles[0];
         targetElbowAngle = angles[1];
@@ -190,28 +199,33 @@ public class Arm {
         double pitch = (Math.toDegrees(angles[2]));
         telemetry.addData("pitch", pitch);
         pitch = Range.clip(pitch, -180, 180);
+        if(!wristOverride)
+            servoMixer(roll, pitch);
+
+        telemetry.addData("targetShoulder", targetShoulderAngle);
+        telemetry.addData("targetElbow", targetElbowAngle);
+        telemetry.addData("currentShoulder", shoulderMotor.getCurrentPosition());
+        telemetry.addData("currentElbow", elbowMotor.getCurrentPosition());
+
+        shoulderMotor.setTargetPosition((int)targetShoulderAngle);
+        elbowMotor.setTargetPosition((int)targetElbowAngle);
+        setPower(0.5,0.5);
+        shoulderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+//        armPIDF((int) targetShoulderAngle, (int) targetElbowAngle);
+        telemetry.addData("Pitch", angles[2]);
+        return true;
+    }
+
+    public void servoMixer(double roll, double pitch){
         double servo1Position = (roll + pitch) / 2;
         double servo2Position = (roll - pitch) / 2;
         servo1Position = Range.clip((servo1Position + 180.0) / 360.0, -1, 1);
         servo2Position = Range.clip((servo2Position + 180.0) / 360.0, -1, 1);
 
-
-
         servo1.setPosition(servo1Position);
         servo2.setPosition(servo2Position);
-
-        shoulderMotor.setTargetPosition((int)targetShoulderAngle);
-        elbowMotor.setTargetPosition((int)targetElbowAngle);
-        setPower(0.5,0.5);
-        closeGripper();
-        shoulderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-
-
-//        armPIDF((int) targetShoulderAngle, (int) targetElbowAngle);
-//        telemetry.addData("Pitch", angles[2]);
-        return true;
     }
 
     public void reportCurrentPosition(){

@@ -45,6 +45,8 @@ public class Main extends OpMode
     @Override
     public void start() {
         runtime.reset();
+        arm.resetEncoder();
+        arm.moveTo(arm.armPoses[0], true);
     }
 
     @Override
