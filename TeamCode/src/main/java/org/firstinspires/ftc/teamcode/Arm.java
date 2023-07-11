@@ -35,11 +35,11 @@ public class Arm {
     private double tolerance = 50;
 
     public Vector2[] armPoses = new Vector2[]{
-            new Vector2(-200, 750), // dpad up - high pole
-            new Vector2(350, 200), // dpad down - intake
-            new Vector2(-300, 400), // dpad left - medium pole
-            new Vector2(-300, 250), // dpad right - low pole
-            new Vector2(100, 500), // 5 - high pole intermediate position
+            new Vector2(-200, 750), // dpad up - high pole (og: -200)
+            new Vector2(-350, 200), // dpad down - intake (og: 350)
+            new Vector2(-300, 400), // dpad left - medium pole (og: -300)
+            new Vector2(-300, 250), // dpad right - low pole (og: -300)
+            new Vector2(-100, 500), // 4 - high pole intermediate position (og: 100)
     };
 
     public int index = 0;
@@ -136,20 +136,29 @@ public class Arm {
         }
 
         if (gamepad.dpad_up){ // high pole
+            if (position == 1) {
+                armTimer.reset();
+            }
             position = 0;
-            armTimer.reset();
         } else if (gamepad.dpad_down){ // intake
             position = 1;
         } else if (gamepad.dpad_left){ // medium pole
+            if (position == 1) {
+                armTimer.reset();
+            }
             position = 2;
+
         } else if (gamepad.dpad_right){ // low pole
+            if (position == 1) {
+                armTimer.reset();
+            }
             position = 3;
         }
         //add delay if going to a pole
         switch (position){
             case 0:
-            case 1:
             case 2:
+            case 3:
                 if(armTimer.milliseconds() < 1000)
                     index = 4;
                 else index = position;
@@ -165,8 +174,8 @@ public class Arm {
         vec.x -= gamepad.left_stick_y*10;
         vec.y -= gamepad.right_stick_y*10;
 
-        if(!moveTo(vec, true)){
-//        if(!moveTo(vec, runtime.milliseconds() < 5000)){
+//        if(!moveTo(vec, true)){
+        if(!moveTo(vec, runtime.milliseconds() < 1000)){
             vec.x = prevX;
             vec.y = prevY;
         }

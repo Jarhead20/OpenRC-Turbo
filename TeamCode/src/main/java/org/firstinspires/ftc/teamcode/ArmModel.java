@@ -57,7 +57,7 @@ public class ArmModel {
 
             //Find the motor angles (if statement to make sure the arm goes overarm)
             if (targetX < BASEX) {
-                wristRoll = 1;
+                wristRoll = -1.2;
                 //Calculate lower motor angle
                 lowerMotorAngle = hypotenuseAngle - Math.asin((Math.sin(innerElbowAngle) * UPPERARMLENGTH) / distance);
                 //Calculate upper motor angle
@@ -69,7 +69,7 @@ public class ArmModel {
 
             }
             else {
-                wristRoll = -1.2;
+                wristRoll = 1.2;
                 //Calculate lower motor angle
                 lowerMotorAngle = hypotenuseAngle + Math.asin((Math.sin(innerElbowAngle) * UPPERARMLENGTH) / distance);
                 //Calculate upper motor angle
